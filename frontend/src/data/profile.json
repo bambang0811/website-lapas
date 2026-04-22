@@ -1,0 +1,72 @@
+{
+  "title": "Profil & Informasi",
+  "description": "Mengenal lebih dekat struktur, visi, misi, dan layanan yang kami tawarkan.",
+  "tabs": [
+    { "id": "profil", "label": "Profil" },
+    { "id": "visi_misi", "label": "Visi & Misi" },
+    { "id": "layanan", "label": "Layanan" },
+    { "id": "struktur", "label": "Struktur" }
+  ],
+  "profil": {
+    "heading": "Profil",
+    "overview": [
+      "Lapas Karawang adalah lembaga pemasyarakatan kelas IIA yang berkomitmen pada pembinaan warga binaan, perlindungan hak asasi manusia, dan reintegrasi sosial.",
+      "Sejak berdiri pada tahun 1975, LAPAS Karawang terus mengembangkan program pembinaan berbasis kompetensi, kesehatan, pendidikan, dan keterampilan kerja.",
+      "Kami mendukung pendekatan humanis dan profesional dalam menjalankan pelayanan pemasyarakatan yang akuntabel dan transparan."
+    ]
+  },
+  "visi_misi": {
+    "visi": "Memulihkan kesatuan hubungan hidup dan penghidupan Warga Binaan Pemasyarakatan sebagai individu, anggota masyarakat, dan makhluk Tuhan Yang Maha Esa, dengan meningkatkan kualitas Warga Binaan Pemasyarakatan.",
+    "explanation": "(Profesional, Responsif, Integritas, Modern, Akuntabel)",
+    "misi_title": "Misi Utama",
+    "misi": [
+      "Melaksanakan perawatan tahanan, pembinaan, dan pembimbingan Warga Binaan Pemasyarakatan serta pengelolaan benda sitaan negara dalam rangka penegakan hukum, pencegahan dan penanggulangan kejahatan, serta perlindungan Hak Asasi Manusia."
+    ]
+  },
+  "layanan": {
+    "heading": "Layanan",
+    "services": [
+      {
+        "title": "Penerimaan dan Pendaftaran Narapidana Baru",
+        "description": "Layanan penerimaan dan pendaftaran resmi untuk narapidana baru yang masuk ke LAPAS Kelas IIA Karawang."
+      },
+      {
+        "title": "Pembebasan Narapidana",
+        "description": "Layanan pemrosesan pembebasan narapidana baik pembebasan murni, pembebasan bersyarat (PB), cuti bersyarat (CB), maupun cuti menjelang bebas (CMB)."
+      },
+      {
+        "title": "Pembebasan Bersyarat (PB) - Integrasi Online",
+        "description": "Pengusulan program pembebasan bersyarat secara online untuk memudahkan keluarga warga binaan pemasyarakatan."
+      },
+      {
+        "title": "Cuti Bersyarat (CB) - Integrasi Online",
+        "description": "Pengusulan cuti bersyarat melalui layanan integrasi online untuk program reintegrasi sosial."
+      },
+      {
+        "title": "Cuti Menjelang Bebas (CMB) - Integrasi Online",
+        "description": "Layanan pengajuan cuti menjelang bebas secara online sebagai tahap persiapan pembebasan akhir."
+      },
+      {
+        "title": "Pemberian Remisi",
+        "description": "Layanan pemberian pengurangan masa pidana berdasarkan perilaku dan prestasi warga binaan."
+      },
+      {
+        "title": "Layanan Video Call Kunjungan",
+        "description": "Layanan kunjungan berbasis teknologi informasi untuk mempertemukan warga binaan dengan keluarganya melalui video call."
+      },
+      {
+        "title": "Layanan Pengaduan dan Konsultasi",
+        "description": "Saluran resmi untuk menerima pengaduan, saran, dan pertanyaan dari masyarakat terkait pelayanan kami."
+      },
+      {
+        "title": "Layanan Kesehatan dan Perawatan Lanjutan",
+        "description": "Layanan rujukan perawatan kesehatan lanjutan bagi warga binaan di fasilitas kesehatan di luar LAPAS."
+      }
+    ]
+  },
+  "struktur": {
+    "heading": "Struktur Organisasi",
+    "image": "/images/struktur-organisasi.svg",
+    "description": "Susunan pimpinan dan unit kerja LAPAS Karawang yang bekerja bersama untuk mewujudkan tujuan pemasyarakatan."
+  }
+}

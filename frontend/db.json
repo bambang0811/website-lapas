@@ -1,0 +1,15 @@
+{
+  "pejabat": [
+    {
+      "id": "2",
+      "nama": "Jane Smith",
+      "jabatan": "Wakil Kepala Dinas"
+    },
+    {
+      "id": "3",
+      "nama": "Michael Johnson",
+      "jabatan": "Sekretaris Departemen"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

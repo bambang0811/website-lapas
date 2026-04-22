@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Nama Pejabat 1",
+    "photo": "/public/images/profile/pejabat1.jpg",
+    "position": "Jabatan Pejabat 1"
+  },
+  {
+    "id": 2,
+    "name": "Nama Pejabat 2",
+    "photo": "/public/images/profile/pejabat2.jpg",
+    "position": "Jabatan Pejabat 2"
+  },
+  {
+    "id": 3,
+    "name": "Nama Pejabat 3",
+    "photo": "/public/images/profile/pejabat3.jpg",
+    "position": "Jabatan Pejabat 3"
+  }
+]
