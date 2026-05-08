@@ -27,9 +27,15 @@ export async function getBeritaById(req, res) {
 export async function createBerita(req, res) {
   try {
     const { judul, excerpt, konten, gambar_url, tanggal_publikasi, penulis, kategori, status } = req.body;
+    let imageUrl = gambar_url || null;
+
+    if (req.file) {
+      imageUrl = `/uploads/berita/${req.file.filename}`;
+    }
+
     const [result] = await pool.query(
       'INSERT INTO berita (judul, excerpt, konten, gambar_url, tanggal_publikasi, penulis, kategori, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [judul, excerpt, konten, gambar_url, tanggal_publikasi || new Date(), penulis, kategori, status || 'published']
+      [judul, excerpt, konten, imageUrl, tanggal_publikasi || new Date(), penulis, kategori, status || 'published']
     );
     const [rows] = await pool.query('SELECT * FROM berita WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
@@ -43,9 +49,23 @@ export async function updateBerita(req, res) {
   try {
     const { id } = req.params;
     const { judul, excerpt, konten, gambar_url, tanggal_publikasi, penulis, kategori, status } = req.body;
+    const [existingRows] = await pool.query('SELECT gambar_url FROM berita WHERE id = ?', [id]);
+    if (!existingRows.length) {
+      return res.status(404).json({ message: 'Berita tidak ditemukan' });
+    }
+
+    let imageUrl = existingRows[0].gambar_url;
+    if (typeof gambar_url !== 'undefined') {
+      imageUrl = gambar_url;
+    }
+
+    if (req.file) {
+      imageUrl = `/uploads/berita/${req.file.filename}`;
+    }
+
     const [result] = await pool.query(
       'UPDATE berita SET judul = ?, excerpt = ?, konten = ?, gambar_url = ?, tanggal_publikasi = ?, penulis = ?, kategori = ?, status = ? WHERE id = ?',
-      [judul, excerpt, konten, gambar_url, tanggal_publikasi, penulis, kategori, status, id]
+      [judul, excerpt, konten, imageUrl, tanggal_publikasi, penulis, kategori, status, id]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Berita tidak ditemukan' });

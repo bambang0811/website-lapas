@@ -50,21 +50,30 @@ class BeritaService {
   // Add berita baru
   async add(beritaData) {
     try {
+      const isFormData = beritaData instanceof FormData;
+      const headers = {
+        'Authorization': `Bearer ${localStorage.getItem('lapas_auth') ? JSON.parse(localStorage.getItem('lapas_auth')).token : ''}`
+      };
+      if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      const body = isFormData
+        ? beritaData
+        : JSON.stringify({
+            judul: beritaData.judul,
+            excerpt: beritaData.excerpt,
+            konten: beritaData.konten,
+            gambar_url: beritaData.gambar_url || beritaData.gambar,
+            penulis: beritaData.penulis || 'Admin LAPAS',
+            kategori: beritaData.kategori,
+            status: beritaData.status || 'draft'
+          });
+
       const response = await fetch(`${API_BASE_URL}/berita`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('lapas_auth') ? JSON.parse(localStorage.getItem('lapas_auth')).token : ''}`
-        },
-        body: JSON.stringify({
-          judul: beritaData.judul,
-          excerpt: beritaData.excerpt,
-          konten: beritaData.konten,
-          gambar_url: beritaData.gambar_url || beritaData.gambar,
-          penulis: beritaData.penulis || 'Admin LAPAS',
-          kategori: beritaData.kategori,
-          status: beritaData.status || 'draft'
-        })
+        headers,
+        body
       });
 
       if (!response.ok) {
@@ -80,21 +89,30 @@ class BeritaService {
   // Update berita
   async update(id, updateData) {
     try {
+      const isFormData = updateData instanceof FormData;
+      const headers = {
+        'Authorization': `Bearer ${localStorage.getItem('lapas_auth') ? JSON.parse(localStorage.getItem('lapas_auth')).token : ''}`
+      };
+      if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      const body = isFormData
+        ? updateData
+        : JSON.stringify({
+            judul: updateData.judul,
+            excerpt: updateData.excerpt,
+            konten: updateData.konten,
+            gambar_url: updateData.gambar_url || updateData.gambar,
+            penulis: updateData.penulis || 'Admin LAPAS',
+            kategori: updateData.kategori,
+            status: updateData.status
+          });
+
       const response = await fetch(`${API_BASE_URL}/berita/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('lapas_auth') ? JSON.parse(localStorage.getItem('lapas_auth')).token : ''}`
-        },
-        body: JSON.stringify({
-          judul: updateData.judul,
-          excerpt: updateData.excerpt,
-          konten: updateData.konten,
-          gambar_url: updateData.gambar_url || updateData.gambar,
-          penulis: updateData.penulis || 'Admin LAPAS',
-          kategori: updateData.kategori,
-          status: updateData.status
-        })
+        headers,
+        body
       });
 
       if (!response.ok) {

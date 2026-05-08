@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 
 import authRoutes from "./routes/auth.routes.js";
 import beritaRoutes from "./routes/berita.routes.js";
@@ -35,7 +36,14 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use('/uploads', express.static('public/uploads'));
+app.use((req, res, next) => {
+  if (req.url.includes("//")) {
+    req.url = req.url.replace(/\/\/+/, "/");
+  }
+  next();
+});
+
+app.use('/uploads', express.static(path.resolve('public', 'uploads')));
 console.log('📁 Uploads served from: http://localhost:5000/uploads');
 
 app.listen(PORT, () => {

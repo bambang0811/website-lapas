@@ -40,12 +40,6 @@ function Header() {
                 </a>
               ))}
             </nav>
-            <a
-              href="/admin"
-              className="ml-4 rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-            >
-              Admin
-            </a>
           </div>
 
           <div className="md:hidden">

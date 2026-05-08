@@ -1,4 +1,3 @@
-// src/hooks/useBerita.js
 import { useState, useEffect } from 'react';
 import beritaService from '../services/beritaService';
 
@@ -8,18 +7,31 @@ export const useBerita = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchBerita = async () => {
       try {
-        const publishedBerita = await beritaService.getPublished();
-        setBerita(publishedBerita);
+        const data = await beritaService.getPublished();
+
+        if (isMounted) {
+          setBerita(data || []);
+        }
       } catch (err) {
-        setError(err.message);
+        if (isMounted) {
+          setError(err?.message || 'Terjadi kesalahan');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchBerita();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return { berita, loading, error };

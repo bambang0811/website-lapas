@@ -1,33 +1,122 @@
-﻿function Hero() {
+﻿import { useEffect, useState } from "react";
+
+// Gambar better taro di C:\lapas-karawang-website\frontend\public\images\carousel
+// Lebih enak filenya WEBP biar lebih ringan, tapi kalau mau pakai JPG/PNG juga bisa
+const slides = [
+  {
+    image: "/images/carousel/lapas.webp",
+    title: "Selamat Datang di",
+    highlight: "Lapas Kelas IIA Karawang",
+    desc: "Sistem Informasi Layanan Lapas Kelas IIA Karawang.",
+  },
+  {
+    image: "/images/carousel/contoh1.webp",
+    title: "Pelayanan Publik",
+    highlight: "Cepat & Responsif",
+    desc: "Kami berkomitmen memberikan layanan terbaik berbasis digital.",
+  },
+  {
+    image: "/images/carousel/caisim.webp",
+    title: "Panen Caisim",
+    highlight: "Pembinaan Pertanian Warga Binaan",
+    desc: "Warga binaan Lapas Kelas IIA Karawang mengikuti pembinaan pertanian melalui kegiatan panen sayur caisim.",
+  },
+  {
+    image: "/images/carousel/sosialisasi.webp",
+    title: "Penyelenggaraan Program Jawara",
+    highlight: "Laundry Bersih",
+    desc: "Laundry Bersih Bagi Warga Binaan",
+  },
+   {
+    image: "/images/carousel/panen.webp",
+    title: "Panen Raya",
+    highlight: "Ketahanan Pangan",
+    desc: "ketahanan pangan melalui program pembinaan warga binaan.",
+  },
+  {
+    image: "/images/carousel/panen1.webp",
+    title: "Panen Raya",
+    highlight: "Ketahanan Pangan",
+    desc: "ketahanan pangan melalui program pembinaan warga binaan.",
+  },
+  {
+    image: "/images/carousel/panen2.webp",
+    title: "Panen Raya",
+    highlight: "Ketahanan Pangan",
+    desc: "ketahanan pangan melalui program pembinaan warga binaan.",
+  },
+  
+];
+
+function Hero() {
+  const [index, setIndex] = useState(0);
+
+  // Auto slide
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % slides.length);
+    }, 10000); // slide ganti gambar per 10 detik -> kalo mau ganti ke 5 detik, ganti jadi 5000. gitu terus.
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const prevSlide = () => {
+    setIndex((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const nextSlide = () => {
+    setIndex((prev) => (prev + 1) % slides.length);
+  };
+
   return (
     <section id="home" className="relative min-h-screen overflow-hidden">
-      <div
-        className="absolute inset-0 bg-fixed bg-cover bg-center"
-        style={{ backgroundImage: `url('/images/GPTempDownload 73.jpg.jpeg')` }}
-      />
+      {/* Background Image */}
+      {slides.map((slide, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+            i === index ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ backgroundImage: `url(${slide.image})` }}
+        />
+      ))}
 
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/35 to-slate-950/95" />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-28 sm:py-32">
-        <div className="space-y-8 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold tracking-tight text-white">
-            Selamat Datang di
-            <span className="block text-sky-300 mt-2">Lapas Kelas IIA Karawang</span>
+      {/* Content */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-28">
+        <div className="text-center space-y-6 max-w-3xl">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
+            {slides[index].title}
+            <span className="block text-sky-300 mt-2">
+              {slides[index].highlight}
+            </span>
           </h1>
-          <p className="mx-auto max-w-2xl text-base sm:text-lg text-slate-200 leading-relaxed">
-            Lapas Karawang menghadirkan informasi transparan dan modern untuk masyarakat, dengan
-            pengalaman browsing yang nyaman, responsif, dan terfokus pada konten utama.
+
+          <p className="text-slate-200 text-lg">
+            {slides[index].desc}
           </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+
+          <div className="flex gap-4 justify-center">
             <button
-              onClick={() => document.getElementById('berita')?.scrollIntoView({ behavior: 'smooth' })}
-              className="btn-primary px-8 py-3 text-lg"
+              onClick={() =>
+                document
+                  .getElementById("berita")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="btn-primary px-6 py-3"
             >
-              Lihat Berita Terbaru
+              Lihat Berita
             </button>
+
             <button
-              onClick={() => document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' })}
-              className="btn-secondary px-8 py-3 text-lg"
+              onClick={() =>
+                document
+                  .getElementById("profile")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="btn-secondary px-6 py-3"
             >
               Kenali Kami
             </button>
@@ -35,15 +124,46 @@
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none" style={{ height: '150px' }}>
-        <svg className="relative block w-full h-full" viewBox="0 0 1440 150" preserveAspectRatio="none">
+      {/* Navigation Buttons */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-white text-3xl"
+      >
+        ‹
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-white text-3xl"
+      >
+        ›
+      </button>
+
+      {/* Dots Indicator */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIndex(i)}
+            className={`w-3 h-3 rounded-full ${
+              i === index ? "bg-white" : "bg-white/40"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Wave */}
+      <div className="absolute -bottom-2 left-0 right-0 h-[150px] pointer-events-none">
+        <svg viewBox="0 0 1440 150" className="w-full h-full">
           <defs>
             <linearGradient id="heroWaveGradient" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="#1e293b" />
               <stop offset="100%" stopColor="#f8fafc" />
             </linearGradient>
           </defs>
-          <path d="M0,100 C360,180 720,20 1440,100 L1440,150 L0,150 Z" fill="url(#heroWaveGradient)" />
+          <path
+            d="M0,100 C360,180 720,20 1440,100 L1440,150 L0,150 Z"
+            fill="url(#heroWaveGradient)"
+          />
         </svg>
       </div>
     </section>

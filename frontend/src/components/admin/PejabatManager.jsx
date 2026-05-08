@@ -116,6 +116,22 @@ const PejabatManager = () => {
     fetchPejabat();
   };
 
+  const getPejabatImage = (foto_url) => {
+    if (!foto_url) {
+      return 'https://picsum.photos/100';
+    }
+
+    if (foto_url.startsWith('http')) {
+      return foto_url;
+    }
+
+    if (foto_url.startsWith('/')) {
+      return `http://localhost:5000${foto_url}`;
+    }
+
+    return `http://localhost:5000/${foto_url}`;
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* HEADER */}
@@ -155,6 +171,7 @@ const PejabatManager = () => {
             type="file"
             accept="image/*"
             onChange={handleImageChange}
+            className="cursor-pointer bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full shadow-xs placeholder:text-body"
           />
 
           {imagePreview && (
@@ -184,7 +201,7 @@ const PejabatManager = () => {
       <div className="bg-white p-4 rounded-lg shadow">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b">
+            <tr className="border-b text-left">
               <th>Foto</th>
               <th>Nama</th>
               <th>Jabatan</th>
@@ -197,19 +214,20 @@ const PejabatManager = () => {
               <tr key={p.id} className="border-b">
                 <td>
                   <img
-                    src={
-                      p.foto_url
-                        ? `http://localhost:5000${p.foto_url}`
-                        : <img src="https://picsum.photos/100" />
-                    }
+                    src={getPejabatImage(p.foto_url)}
                     className="w-12 h-12 object-cover"
+                    alt={p.nama}
                   />
                 </td>
                 <td>{p.nama}</td>
                 <td>{p.jabatan}</td>
-                <td>
-                  <button onClick={() => handleEdit(p)}>Edit</button>
-                  <button onClick={() => handleDelete(p.id)}>Hapus</button>
+                <td className="gap-2 space-x-2">
+                  <button onClick={() => handleEdit(p)} className="bg-blue-500 text-white px-2 py-1 rounded">
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete(p.id)} className="bg-red-500 text-white px-2 py-1 rounded">
+                    Hapus
+                  </button>
                 </td>
               </tr>
             ))}

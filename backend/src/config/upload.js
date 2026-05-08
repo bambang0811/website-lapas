@@ -1,22 +1,21 @@
-// config/upload.js - VERSI FIX
+// config/upload.js
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-const storage = multer.diskStorage({
+const createStorage = (subfolder) => multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'public/uploads/pejabat';
-    
-    // ✅ Buat folder jika belum ada
+    const uploadDir = path.join('public', 'uploads', subfolder);
+
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
       console.log('📁 Created folder:', uploadDir);
     }
-    
+
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
+    const uniqueName = `${Date.now()}-${file.originalname}`;
     console.log('📸 Uploading:', uniqueName);
     cb(null, uniqueName);
   }
@@ -31,10 +30,12 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ 
-  storage, 
+const createUpload = (subfolder) => multer({ 
+  storage: createStorage(subfolder), 
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter 
 });
 
-export default upload;
+export const uploadPejabat = createUpload('pejabat');
+export const uploadBerita = createUpload('berita');
+export default uploadPejabat;

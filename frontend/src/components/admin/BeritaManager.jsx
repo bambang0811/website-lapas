@@ -59,11 +59,28 @@ function BeritaManager() {
     const submitData = forcedStatus ? { ...formData, status: forcedStatus } : formData;
 
     try {
+      const payload = new FormData();
+      payload.append('judul', submitData.judul);
+      payload.append('excerpt', submitData.excerpt);
+      payload.append('konten', submitData.konten);
+      payload.append('kategori', submitData.kategori);
+      payload.append('status', submitData.status || 'draft');
+      payload.append('penulis', submitData.penulis || 'Admin LAPAS');
+      if (submitData.tanggal_publikasi) {
+        payload.append('tanggal_publikasi', submitData.tanggal_publikasi);
+      }
+
+      if (submitData.gambar instanceof File) {
+        payload.append('gambar', submitData.gambar);
+      } else if (typeof submitData.gambar === 'string' && submitData.gambar !== '') {
+        payload.append('gambar_url', submitData.gambar);
+      }
+
       if (isEditing && selectedId !== null) {
-        await beritaService.update(selectedId, submitData);
+        await beritaService.update(selectedId, payload);
         setMessage('Berita berhasil diperbarui.');
       } else {
-        await beritaService.add(submitData);
+        await beritaService.add(payload);
         setMessage('Berita baru berhasil ditambahkan.');
       }
       setFormData(initialForm);
@@ -81,19 +98,22 @@ function BeritaManager() {
   };
 
   const handleEdit = (item) => {
+    const existingImage = item.gambar_url || item.gambar || '';
     setFormData({
       judul: item.judul,
       excerpt: item.excerpt,
       konten: item.konten,
       kategori: item.kategori,
-      gambar: item.gambar || '',
-      status: item.status || 'published' // Keep existing status for editing
+      gambar: existingImage,
+      status: item.status || 'published', // Keep existing status for editing
+      penulis: item.penulis || 'Admin LAPAS',
+      tanggal_publikasi: item.tanggal_publikasi || ''
     });
     setSelectedId(item.id);
     setIsEditing(true);
     setMessage('');
     setError('');
-    setImagePreview(item.gambar || '');
+    setImagePreview(existingImage ? (existingImage.startsWith('http') ? existingImage : `http://localhost:5000${existingImage}`) : '');
   };
 
   const handleDelete = async (id) => {
@@ -141,23 +161,9 @@ function BeritaManager() {
       return;
     }
 
-    setIsUploading(true);
     setError('');
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64String = event.target.result;
-      setImagePreview(base64String);
-      setFormData({ ...formData, gambar: base64String });
-      setIsUploading(false);
-    };
-
-    reader.onerror = () => {
-      setError('Gagal membaca file gambar');
-      setIsUploading(false);
-    };
-
-    reader.readAsDataURL(file);
+    setFormData({ ...formData, gambar: file });
+    setImagePreview(URL.createObjectURL(file));
   };
 
   // Remove selected image
@@ -167,6 +173,14 @@ function BeritaManager() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const getImageUrl = (gambar) => {
+    if (!gambar) return null;
+    if (typeof gambar !== 'string') return gambar;
+    if (gambar.startsWith('data:') || gambar.startsWith('http')) return gambar;
+    if (gambar.startsWith('/')) return `http://localhost:5000${gambar}`;
+    return `http://localhost:5000/${gambar}`;
   };
 
   return (
@@ -318,9 +332,9 @@ function BeritaManager() {
                 <Card key={item.id} className="p-4">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     <div className="flex gap-4">
-                      {item.gambar && (
+                      {(item.gambar || item.gambar_url) && (
                         <img
-                          src={item.gambar}
+                          src={getImageUrl(item.gambar_url || item.gambar)}
                           alt={item.judul}
                           className="w-20 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
                         />

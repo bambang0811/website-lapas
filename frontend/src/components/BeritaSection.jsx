@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useBerita } from '../hooks/useBerita';
 import Card from './common/Card';
 import Button from './common/Button';
@@ -7,15 +7,20 @@ function BeritaSection() {
   const { berita, loading, error } = useBerita();
   const [selectedBerita, setSelectedBerita] = useState(null);
 
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('id-ID', options);
-  };
+  const formatDate = useCallback((dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }, []);
 
-  const truncateText = (text, maxLength) => {
+  const truncateText = useCallback((text, maxLength) => {
+    if (!text) return '';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -53,7 +58,7 @@ function BeritaSection() {
               <div className="h-1 w-16 bg-blue-600 rounded-full"></div>
             </div>
             <p className="text-lg text-slate-700 max-w-2xl mx-auto">
-              Informasi terbaru tentang kegiatan, program, dan pengembangan LAPAS Karawang.
+              Informasi terbaru tentang kegiatan dan program.
             </p>
           </div>
 
@@ -61,14 +66,14 @@ function BeritaSection() {
             {berita.slice(0, 6).map((item, index) => (
               <Card key={item.id} hover shadow="md" className="h-full">
                 <div className="h-64 bg-slate-200 overflow-hidden">
-                  {item.gambar ? (
+                  {item.gambar_url ? (
                     <img
-                      src={item.gambar}
+                      src={`http://localhost:5000${item.gambar_url}`}
                       alt={item.judul}
                       className="w-full h-full object-cover"
                       loading={index < 3 ? 'eager' : 'lazy'}
                       onError={(e) => {
-                        e.target.src = '/images/placeholder-news.jpg';
+                        e.currentTarget.src = '/images/placeholder-news.jpg';
                       }}
                     />
                   ) : (
@@ -77,21 +82,30 @@ function BeritaSection() {
                     </div>
                   )}
                 </div>
+
                 <div className="p-6">
                   <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                       {item.kategori}
                     </span>
                     <span>•</span>
-                    <time>{formatDate(item.tanggal)}</time>
+                    <time>{formatDate(item.tanggal_publikasi)}</time>
                   </div>
+
                   <h3 className="text-xl font-semibold text-slate-900 mb-3">
                     {item.judul}
                   </h3>
+
                   <p className="text-slate-600 text-sm mb-6">
                     {truncateText(item.excerpt, 120)}
                   </p>
-                  <Button size="sm" variant="primary" className="w-full" onClick={() => setSelectedBerita(item)}>
+
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    className="w-full"
+                    onClick={() => setSelectedBerita(item)}
+                  >
                     Baca Selengkapnya
                   </Button>
                 </div>
@@ -101,40 +115,69 @@ function BeritaSection() {
 
           {berita.length === 0 && (
             <div className="text-center py-24">
-              <h3 className="text-3xl font-bold text-slate-900 mb-4">Belum Ada Berita</h3>
-              <p className="text-slate-600 text-lg">Berita akan segera hadir. Pantau terus untuk update terbaru!</p>
+              <h3 className="text-3xl font-bold text-slate-900 mb-4">
+                Belum Ada Berita
+              </h3>
+              <p className="text-slate-600 text-lg">
+                Berita akan segera hadir.
+              </p>
             </div>
           )}
         </div>
       </section>
 
       {selectedBerita && (
-        <div className="fixed inset-0 z-50 bg-black/40 p-4 overflow-y-auto" onClick={(e) => e.target === e.currentTarget && setSelectedBerita(null)}>
+        <div
+          className="fixed inset-0 z-50 bg-black/40 p-4 overflow-y-auto"
+          onClick={(e) =>
+            e.target === e.currentTarget && setSelectedBerita(null)
+          }
+        >
           <div className="flex min-h-screen items-center justify-center">
             <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl overflow-hidden">
-              <div className="flex items-center justify-between border-b border-slate-200 p-6">
-                <h3 className="text-2xl font-bold text-slate-900">{selectedBerita.judul}</h3>
-                <button onClick={() => setSelectedBerita(null)} className="text-slate-600 hover:text-slate-900">
+              <div className="flex items-center justify-between border-b p-6">
+                <h3 className="text-2xl font-bold">
+                  {selectedBerita.judul}
+                </h3>
+                <button onClick={() => setSelectedBerita(null)}>
                   Tutup
                 </button>
               </div>
+
               <div className="p-6 space-y-6">
                 <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                  <span className="rounded-full bg-slate-100 px-3 py-1">{selectedBerita.kategori}</span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1">
+                    {selectedBerita.kategori}
+                  </span>
                   <span>•</span>
-                  <time>{formatDate(selectedBerita.tanggal)}</time>
+                  <time>
+                    {formatDate(selectedBerita.tanggal_publikasi)}
+                  </time>
                   <span>•</span>
                   <span>{selectedBerita.penulis}</span>
                 </div>
-                {selectedBerita.gambar && (
-                  <img src={selectedBerita.gambar} alt={selectedBerita.judul} className="w-full h-80 object-cover rounded-lg" />
+
+                {selectedBerita.gambar_url && (
+                  <img
+                    src={selectedBerita.gambar_url}
+                    alt={selectedBerita.judul}
+                    className="w-full h-80 object-cover rounded-lg"
+                  />
                 )}
-                <div className="prose prose-slate max-w-none text-slate-700">
-                  <div dangerouslySetInnerHTML={{ __html: selectedBerita.konten }} />
+
+                <div className="prose max-w-none">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: selectedBerita.konten,
+                    }}
+                  />
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button variant="primary" className="w-full">Bagikan Berita</Button>
-                  <Button variant="secondary" className="w-full">Berita Lainnya</Button>
+
+                <div className="flex gap-3">
+                  <Button className="w-full">Bagikan</Button>
+                  <Button variant="secondary" className="w-full">
+                    Berita Lainnya
+                  </Button>
                 </div>
               </div>
             </div>
@@ -146,4 +189,3 @@ function BeritaSection() {
 }
 
 export default BeritaSection;
-
