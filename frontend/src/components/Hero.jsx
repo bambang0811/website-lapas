@@ -10,12 +10,6 @@ const slides = [
     desc: "Selamat datang di website resmi lapas kelas IIA karawang.",
   },
   {
-    image: "/images/carousel/contoh1.webp",
-    title: "Pelayanan Publik",
-    highlight: "Cepat & Responsif",
-    desc: "Kami berkomitmen memberikan layanan terbaik berbasis digital.",
-  },
-  {
     image: "/images/carousel/caisim.webp",
     title: "Pembinaan Pertanian",
     highlight: "Warga Binaan",

@@ -67,7 +67,7 @@ function ProfileSection() {
         Profil Pejabat
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {pejabatData.slice(0, visibleCount).map((pejabat) => (
   <div
     key={pejabat.id}
