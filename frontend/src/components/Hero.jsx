@@ -5,9 +5,9 @@
 const slides = [
   {
     image: "/images/carousel/lapas.webp",
-    title: "Selamat Datang di",
-    highlight: "Lapas Kelas IIA Karawang",
-    desc: "Sistem Informasi Layanan Lapas Kelas IIA Karawang.",
+    title: "Lembaga Pemasyarakatan",
+    highlight: "Kelas IIA Karawang",
+    desc: "Selamat datang di website resmi lapas kelas IIA karawang.",
   },
   {
     image: "/images/carousel/contoh1.webp",
@@ -17,13 +17,13 @@ const slides = [
   },
   {
     image: "/images/carousel/caisim.webp",
-    title: "Panen Caisim",
-    highlight: "Pembinaan Pertanian Warga Binaan",
+    title: "Pembinaan Pertanian",
+    highlight: "Warga Binaan",
     desc: "Warga binaan Lapas Kelas IIA Karawang mengikuti pembinaan pertanian melalui kegiatan panen sayur caisim.",
   },
   {
     image: "/images/carousel/sosialisasi.webp",
-    title: "Penyelenggaraan Program Jawara",
+    title: "Penyelenggaraan Program",
     highlight: "Laundry Bersih",
     desc: "Laundry Bersih Bagi Warga Binaan",
   },
@@ -53,12 +53,17 @@ function Hero() {
 
   // Auto slide
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % slides.length);
-    }, 10000); // slide ganti gambar per 10 detik -> kalo mau ganti ke 5 detik, ganti jadi 5000. gitu terus.
+  const interval = setInterval(() => {
+    setIndex((prevIndex) => {
+      if (prevIndex === slides.length - 1) {
+        return 0;
+      }
+      return prevIndex + 1;
+    });
+  }, 10000);
 
-    return () => clearInterval(interval);
-  }, []);
+  return () => clearInterval(interval);
+}, [index]);
 
   const prevSlide = () => {
     setIndex((prev) => (prev - 1 + slides.length) % slides.length);

@@ -69,19 +69,30 @@ function ProfileSection() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {pejabatData.slice(0, visibleCount).map((pejabat) => (
-          <div key={pejabat.id} className="bg-white shadow-md rounded-lg overflow-hidden">
-            <div className="p-4 text-center">
-              <h4 className="text-lg font-semibold text-slate-900">{pejabat.nama}</h4>
-              <p className="text-slate-600 text-sm">{pejabat.jabatan}</p>
-            </div>
-            <img
-              src={getPejabatImage(pejabat.foto_url)}
-              alt={pejabat.nama}
-              loading="lazy"
-              className="w-full h-48 object-cover"
-            />
-          </div>
-        ))}
+  <div
+    key={pejabat.id}
+    className="bg-white shadow-md rounded-lg overflow-hidden"
+  >
+    {/* Background + Padding */}
+    <div className="bg-slate-100 p-3">
+      <img
+        src={getPejabatImage(pejabat.foto_url)}
+        alt={pejabat.nama}
+        loading="lazy"
+       className="w-full aspect-[3/4] object-cover rounded-lg"
+      />
+    </div>
+
+    <div className="p-4 text-center">
+      <h4 className="text-lg font-semibold text-slate-900">
+        {pejabat.nama}
+      </h4>
+      <p className="text-slate-600 text-sm">
+        {pejabat.jabatan}
+      </p>
+    </div>
+  </div>
+))}
       </div>
 
       {/* Load More Button */}
@@ -200,7 +211,7 @@ function ProfileSection() {
   };
 
   return (
-    <section id="profile" className="bg-slate-50 section-padding">
+    <section id="profile" className="bg-slate-50 section-padding pt-16">
       <div className="max-w-7xl mx-auto">
 
         <div className="text-center mb-12">
