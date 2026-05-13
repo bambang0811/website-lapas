@@ -155,7 +155,11 @@ function BeritaSection() {
 
                 {selectedBerita.gambar_url && (
                   <img
+<<<<<<< Updated upstream
                     src={`${API_URL}${selectedBerita.gambar_url}`}
+=======
+                    src={`http://localhost:5000${selectedBerita.gambar_url}`}
+>>>>>>> Stashed changes
                     alt={selectedBerita.judul}
                     className="w-full h-80 object-cover rounded-lg"
                   />
