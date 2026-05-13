@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import beritaService from '../services/beritaService';
+import { useState, useEffect } from "react";
+import beritaService from "../services/beritaService";
 
 export const useBerita = () => {
   const [berita, setBerita] = useState([]);
@@ -18,7 +18,7 @@ export const useBerita = () => {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err?.message || 'Terjadi kesalahan');
+          setError(err?.message || "Terjadi kesalahan");
         }
       } finally {
         if (isMounted) {

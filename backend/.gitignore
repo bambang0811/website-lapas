@@ -1,9 +1,6 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
-
 # Environment variables
 .env
 .env.*
@@ -17,15 +14,22 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Vite
-.vite/
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
 # Coverage
 coverage/
 
-# Cache
-.cache/
-.eslintcache
+# Build / dist
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
 
 # OS generated files
 .DS_Store
@@ -37,7 +41,16 @@ Thumbs.db
 *.swp
 *.swo
 
-# Optional lock files
-# package-lock.json
+# Nodemon cache
+.nodemon/
+
+# Uploads
+uploads/
+
+# Database dumps
+*.sql
+
+# Package lock optional
+package-lock.json
 # yarn.lock
 # pnpm-lock.yaml

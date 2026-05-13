@@ -8,7 +8,7 @@ class ProfileService {
   }
 
   // Get profile dari local data dengan fallback ke localStorage
-  async getProfile() {
+  getProfile() {
     // Fallback ke localStorage atau file default
     try {
       const storedProfile = localStorage.getItem(STORAGE_KEY);

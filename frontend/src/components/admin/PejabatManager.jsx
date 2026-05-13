@@ -12,10 +12,7 @@ const PejabatManager = () => {
   const [imagePreview, setImagePreview] = useState("");
   const fileInputRef = useRef(null);
 
-  // ================= GET DATA =================
-  useEffect(() => {
-    fetchPejabat();
-  }, []);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchPejabat = async () => {
     try {
@@ -25,6 +22,19 @@ const PejabatManager = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    const loadPejabat = async () => {
+      try {
+        const data = await pejabatService.getPejabat();
+        setPejabatList(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadPejabat();
+  }, []);
 
   // ================= INPUT =================
   const handleInputChange = (e) => {
@@ -86,7 +96,6 @@ const PejabatManager = () => {
       setFormData({ nama: "", jabatan: "", photo: null });
       setImagePreview("");
       if (fileInputRef.current) fileInputRef.current.value = "";
-
     } catch (error) {
       console.error(error);
     }
@@ -101,11 +110,7 @@ const PejabatManager = () => {
       photo: null,
     });
 
-    setImagePreview(
-      pejabat.foto_url
-        ? `http://localhost:5000${pejabat.foto_url}`
-        : ""
-    );
+    setImagePreview(pejabat.foto_url ? `${API_URL}${pejabat.foto_url}` : "");
   };
 
   // ================= DELETE =================
@@ -118,18 +123,18 @@ const PejabatManager = () => {
 
   const getPejabatImage = (foto_url) => {
     if (!foto_url) {
-      return 'https://picsum.photos/100';
+      return "https://picsum.photos/100";
     }
 
-    if (foto_url.startsWith('http')) {
+    if (foto_url.startsWith("http")) {
       return foto_url;
     }
 
-    if (foto_url.startsWith('/')) {
-      return `http://localhost:5000${foto_url}`;
+    if (foto_url.startsWith("/")) {
+      return `${API_URL}${foto_url}`;
     }
 
-    return `http://localhost:5000/${foto_url}`;
+    return `${API_URL}/${foto_url}`;
   };
 
   return (
@@ -137,15 +142,12 @@ const PejabatManager = () => {
       {/* HEADER */}
       <div>
         <h2 className="text-2xl font-semibold">Kelola Pejabat Struktural</h2>
-        <p className="text-sm text-gray-500">
-          Tambah dan kelola data pejabat
-        </p>
+        <p className="text-sm text-gray-500">Tambah dan kelola data pejabat</p>
       </div>
 
       {/* FORM */}
       <div className="bg-white p-6 rounded-lg shadow">
         <form onSubmit={handleAddOrUpdatePejabat} className="space-y-4">
-
           <input
             type="text"
             name="nama"
@@ -222,10 +224,16 @@ const PejabatManager = () => {
                 <td>{p.nama}</td>
                 <td>{p.jabatan}</td>
                 <td className="gap-2 space-x-2">
-                  <button onClick={() => handleEdit(p)} className="bg-blue-500 text-white px-2 py-1 rounded">
+                  <button
+                    onClick={() => handleEdit(p)}
+                    className="bg-blue-500 text-white px-2 py-1 rounded"
+                  >
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(p.id)} className="bg-red-500 text-white px-2 py-1 rounded">
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
                     Hapus
                   </button>
                 </td>

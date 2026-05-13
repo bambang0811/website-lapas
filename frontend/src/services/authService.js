@@ -1,9 +1,8 @@
-// Service untuk authentication
-// Menggunakan backend API untuk session management
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-const AUTH_STORAGE_KEY = 'lapas_auth';
-const USER_STORAGE_KEY = 'lapas_user';
+const AUTH_STORAGE_KEY = "lapas_auth";
+const USER_STORAGE_KEY = "lapas_user";
 
 class AuthService {
   constructor() {
@@ -14,11 +13,11 @@ class AuthService {
   async login(username, password) {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) {
@@ -33,19 +32,19 @@ class AuthService {
           user: {
             id: data.user.id,
             username: data.user.username,
-            role: data.user.role
+            role: data.user.role,
           },
-          loginTime: new Date().toISOString()
+          loginTime: new Date().toISOString(),
         };
 
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionData));
         return { success: true, user: sessionData.user };
       }
 
-      return { success: false, message: 'Username atau password salah' };
+      return { success: false, message: "Username atau password salah" };
     } catch (error) {
-      console.error('Error during login:', error);
-      return { success: false, message: 'Terjadi kesalahan saat login' };
+      console.error("Error during login:", error);
+      return { success: false, message: "Terjadi kesalahan saat login" };
     }
   }
 
@@ -55,8 +54,8 @@ class AuthService {
       localStorage.removeItem(AUTH_STORAGE_KEY);
       return { success: true };
     } catch (error) {
-      console.error('Error during logout:', error);
-      return { success: false, message: 'Terjadi kesalahan saat logout' };
+      console.error("Error during logout:", error);
+      return { success: false, message: "Terjadi kesalahan saat logout" };
     }
   }
 
@@ -69,7 +68,7 @@ class AuthService {
       const session = JSON.parse(authData);
       return session.isAuthenticated === true;
     } catch (error) {
-      console.error('Error checking authentication:', error);
+      console.error("Error checking authentication:", error);
       return false;
     }
   }
@@ -81,9 +80,9 @@ class AuthService {
 
       const authData = localStorage.getItem(AUTH_STORAGE_KEY);
       const session = JSON.parse(authData);
-      return session.user.role === 'admin';
+      return session.user.role === "admin";
     } catch (error) {
-      console.error('Error checking admin role:', error);
+      console.error("Error checking admin role:", error);
       return false;
     }
   }
@@ -97,7 +96,7 @@ class AuthService {
       const session = JSON.parse(authData);
       return session.user;
     } catch (error) {
-      console.error('Error getting current user:', error);
+      console.error("Error getting current user:", error);
       return null;
     }
   }
@@ -108,7 +107,7 @@ class AuthService {
       const authData = localStorage.getItem(AUTH_STORAGE_KEY);
       return authData ? JSON.parse(authData) : null;
     } catch (error) {
-      console.error('Error getting session info:', error);
+      console.error("Error getting session info:", error);
       return null;
     }
   }
@@ -117,12 +116,12 @@ class AuthService {
   updateProfile(userData) {
     try {
       if (!this.isAuthenticated()) {
-        return { success: false, message: 'User not authenticated' };
+        return { success: false, message: "User not authenticated" };
       }
 
-      const users = JSON.parse(localStorage.getItem('lapas_users') || '[]');
+      const users = JSON.parse(localStorage.getItem("lapas_users") || "[]");
       const currentUser = this.getCurrentUser();
-      const userIndex = users.findIndex(u => u.id === currentUser.id);
+      const userIndex = users.findIndex((u) => u.id === currentUser.id);
 
       if (userIndex !== -1) {
         users[userIndex] = { ...users[userIndex], ...userData };
@@ -131,15 +130,18 @@ class AuthService {
         const authData = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY));
         authData.user = { ...authData.user, ...userData };
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
-        localStorage.setItem('lapas_users', JSON.stringify(users));
+        localStorage.setItem("lapas_users", JSON.stringify(users));
 
         return { success: true, user: authData.user };
       }
 
-      return { success: false, message: 'User not found' };
+      return { success: false, message: "User not found" };
     } catch (error) {
-      console.error('Error updating profile:', error);
-      return { success: false, message: 'Terjadi kesalahan saat update profile' };
+      console.error("Error updating profile:", error);
+      return {
+        success: false,
+        message: "Terjadi kesalahan saat update profile",
+      };
     }
   }
 
@@ -147,23 +149,26 @@ class AuthService {
   changePassword(currentPassword, newPassword) {
     try {
       if (!this.isAuthenticated()) {
-        return { success: false, message: 'User not authenticated' };
+        return { success: false, message: "User not authenticated" };
       }
 
-      const users = JSON.parse(localStorage.getItem('lapas_users') || '[]');
+      const users = JSON.parse(localStorage.getItem("lapas_users") || "[]");
       const currentUser = this.getCurrentUser();
-      const user = users.find(u => u.id === currentUser.id);
+      const user = users.find((u) => u.id === currentUser.id);
 
       if (user && user.password === currentPassword) {
         user.password = newPassword;
-        localStorage.setItem('lapas_users', JSON.stringify(users));
+        localStorage.setItem("lapas_users", JSON.stringify(users));
         return { success: true };
       }
 
-      return { success: false, message: 'Password lama salah' };
+      return { success: false, message: "Password lama salah" };
     } catch (error) {
-      console.error('Error changing password:', error);
-      return { success: false, message: 'Terjadi kesalahan saat mengubah password' };
+      console.error("Error changing password:", error);
+      return {
+        success: false,
+        message: "Terjadi kesalahan saat mengubah password",
+      };
     }
   }
 }

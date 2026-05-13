@@ -38,6 +38,15 @@ CREATE TABLE IF NOT EXISTS pejabat (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Create Popup Messages Table
+CREATE TABLE IF NOT EXISTS popup_messages (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  image_url VARCHAR(500),
+  active TINYINT(1) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Insert Seed Data for Users
 INSERT INTO users (username, password, role) VALUES 
 ('admin', 'admin123', 'admin'),

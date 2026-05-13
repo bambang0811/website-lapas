@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Home', id: 'home' },
-    { name: 'Berita', id: 'berita' },
-    { name: 'Profile', id: 'profile' },
-    { name: 'Alamat', id: 'alamat' }
+    { name: "Home", id: "home" },
+    { name: "Berita", id: "berita" },
+    { name: "Profile", id: "profile" },
+    { name: "Alamat", id: "alamat" },
   ];
 
   return (
@@ -48,11 +48,26 @@ function Header() {
               className="p-2 text-white rounded-lg hover:bg-slate-800"
               aria-label="Toggle menu"
             >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 )}
               </svg>
             </button>
@@ -67,7 +82,7 @@ function Header() {
                   key={item.id}
                   href={`#${item.id}`}
                   onClick={() => setIsMenuOpen(false)}
-                    className="block rounded-lg px-4 py-3 text-sm font-medium text-white hover:bg-slate-800"
+                  className="block rounded-lg px-4 py-3 text-sm font-medium text-white hover:bg-slate-800"
                 >
                   {item.name}
                 </a>
@@ -87,4 +102,3 @@ function Header() {
 }
 
 export default Header;
-

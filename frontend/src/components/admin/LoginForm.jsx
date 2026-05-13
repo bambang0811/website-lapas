@@ -1,40 +1,43 @@
-import { useState } from 'react';
-import authService from '../../services/authService';
-import Button from '../common/Button';
-import Card from '../common/Card';
+import { useState } from "react";
+import authService from "../../services/authService";
+import Button from "../common/Button";
+import Card from "../common/Card";
 
 function LoginForm({ onLoginSuccess }) {
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    username: "",
+    password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
     // Clear error when user starts typing
-    if (error) setError('');
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const result = await authService.login(formData.username, formData.password);
+      const result = await authService.login(
+        formData.username,
+        formData.password,
+      );
       if (result.success) {
         onLoginSuccess(result.user);
       } else {
         setError(result.message);
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError('Terjadi kesalahan saat login');
+      console.error("Login error:", error);
+      setError("Terjadi kesalahan saat login");
     } finally {
       setLoading(false);
     }
@@ -61,7 +64,10 @@ function LoginForm({ onLoginSuccess }) {
             )}
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Username
               </label>
               <input
@@ -77,7 +83,10 @@ function LoginForm({ onLoginSuccess }) {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Password
               </label>
               <input
@@ -98,7 +107,7 @@ function LoginForm({ onLoginSuccess }) {
               loading={loading}
               disabled={loading}
             >
-              {loading ? 'Sedang Masuk...' : 'Masuk'}
+              {loading ? "Sedang Masuk..." : "Masuk"}
             </Button>
           </form>
 

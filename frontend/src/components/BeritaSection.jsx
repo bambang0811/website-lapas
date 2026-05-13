@@ -1,25 +1,27 @@
-import { useState, useCallback } from 'react';
-import { useBerita } from '../hooks/useBerita';
-import Card from './common/Card';
-import Button from './common/Button';
+import { useState, useCallback } from "react";
+import { useBerita } from "../hooks/useBerita";
+import Card from "./common/Card";
+import Button from "./common/Button";
 
 function BeritaSection() {
   const { berita, loading, error } = useBerita();
   const [selectedBerita, setSelectedBerita] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const formatDate = useCallback((dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   }, []);
 
   const truncateText = useCallback((text, maxLength) => {
-    if (!text) return '';
+    if (!text) return "";
     if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    return text.substring(0, maxLength) + "...";
   }, []);
 
   if (loading) {
@@ -68,12 +70,12 @@ function BeritaSection() {
                 <div className="h-64 bg-slate-200 overflow-hidden">
                   {item.gambar_url ? (
                     <img
-                      src={`http://localhost:5000${item.gambar_url}`}
+                      src={`${API_URL}${item.gambar_url}`}
                       alt={item.judul}
                       className="w-full h-full object-cover"
-                      loading={index < 3 ? 'eager' : 'lazy'}
+                      loading={index < 3 ? "eager" : "lazy"}
                       onError={(e) => {
-                        e.currentTarget.src = '/images/placeholder-news.jpg';
+                        e.currentTarget.src = "/images/placeholder-news.jpg";
                       }}
                     />
                   ) : (
@@ -136,12 +138,8 @@ function BeritaSection() {
           <div className="flex min-h-screen items-center justify-center">
             <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl overflow-hidden">
               <div className="flex items-center justify-between border-b p-6">
-                <h3 className="text-2xl font-bold">
-                  {selectedBerita.judul}
-                </h3>
-                <button onClick={() => setSelectedBerita(null)}>
-                  Tutup
-                </button>
+                <h3 className="text-2xl font-bold">{selectedBerita.judul}</h3>
+                <button onClick={() => setSelectedBerita(null)}>Tutup</button>
               </div>
 
               <div className="p-6 space-y-6">
@@ -150,16 +148,14 @@ function BeritaSection() {
                     {selectedBerita.kategori}
                   </span>
                   <span>•</span>
-                  <time>
-                    {formatDate(selectedBerita.tanggal_publikasi)}
-                  </time>
+                  <time>{formatDate(selectedBerita.tanggal_publikasi)}</time>
                   <span>•</span>
                   <span>{selectedBerita.penulis}</span>
                 </div>
 
                 {selectedBerita.gambar_url && (
                   <img
-                    src={selectedBerita.gambar_url}
+                    src={`${API_URL}${selectedBerita.gambar_url}`}
                     alt={selectedBerita.judul}
                     className="w-full h-80 object-cover rounded-lg"
                   />

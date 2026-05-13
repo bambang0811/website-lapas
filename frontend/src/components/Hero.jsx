@@ -21,7 +21,7 @@ const slides = [
     highlight: "Laundry Bersih",
     desc: "Laundry Bersih Bagi Warga Binaan",
   },
-   {
+  {
     image: "/images/carousel/panen.webp",
     title: "Panen Raya",
     highlight: "Ketahanan Pangan",
@@ -39,7 +39,6 @@ const slides = [
     highlight: "Ketahanan Pangan",
     desc: "ketahanan pangan melalui program pembinaan warga binaan.",
   },
-  
 ];
 
 function Hero() {
@@ -47,17 +46,17 @@ function Hero() {
 
   // Auto slide
   useEffect(() => {
-  const interval = setInterval(() => {
-    setIndex((prevIndex) => {
-      if (prevIndex === slides.length - 1) {
-        return 0;
-      }
-      return prevIndex + 1;
-    });
-  }, 10000);
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => {
+        if (prevIndex === slides.length - 1) {
+          return 0;
+        }
+        return prevIndex + 1;
+      });
+    }, 10000);
 
-  return () => clearInterval(interval);
-}, [index]);
+    return () => clearInterval(interval);
+  }, [index]);
 
   const prevSlide = () => {
     setIndex((prev) => (prev - 1 + slides.length) % slides.length);
@@ -93,9 +92,7 @@ function Hero() {
             </span>
           </h1>
 
-          <p className="text-slate-200 text-lg">
-            {slides[index].desc}
-          </p>
+          <p className="text-slate-200 text-lg">{slides[index].desc}</p>
 
           <div className="flex gap-4 justify-center">
             <button

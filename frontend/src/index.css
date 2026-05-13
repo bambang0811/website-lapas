@@ -19,7 +19,12 @@
     line-height: 1.6;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-bold text-slate-900 mb-4;
     font-family: var(--heading-font);
   }
@@ -39,7 +44,7 @@
   }
 
   .section-padding {
-    @apply py-24 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16;
+    @apply py-12 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16;
   }
 
   .header-nav-link {

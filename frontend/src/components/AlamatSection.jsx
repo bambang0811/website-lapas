@@ -1,15 +1,29 @@
 function AlamatSection() {
   const contactInfo = {
-    alamat: 'Jl. Surotokunto No.110, Warungbambu, Kec. Karawang Tim., Karawang, Jawa Barat 41371',
-    telepon: '(0264) 841234',
-    email: 'info@lapaskarawang.go.id',
-    jam_operasional: 'Senin - Kamis: 08:30 - 14:00 WIB | Jumat-Sabtu: 08:30 - 11:15 WIB'
+    alamat:
+      "Jl. Surotokunto No.110, Warungbambu, Kec. Karawang Tim., Karawang, Jawa Barat 41371",
+    telepon: "(0264) 841234",
+    email: "info@lapaskarawang.go.id",
+    jam_operasional:
+      "Senin - Kamis: 08:30 - 14:00 WIB | Jumat-Sabtu: 08:30 - 11:15 WIB",
   };
 
   const socialLinks = [
-    { name: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com/lapas.karawang/' },
-    { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/lapaskarawang/reels/' },
-    { name: 'YouTube', icon: 'youtube', url: 'https://www.youtube.com/@lapaskarawang7543' }
+    {
+      name: "Facebook",
+      icon: "facebook",
+      url: "https://www.facebook.com/lapas.karawang/",
+    },
+    {
+      name: "Instagram",
+      icon: "instagram",
+      url: "https://www.instagram.com/lapaskarawang/reels/",
+    },
+    {
+      name: "YouTube",
+      icon: "youtube",
+      url: "https://www.youtube.com/@lapaskarawang7543",
+    },
   ];
 
   const getSocialIcon = (iconName) => {
@@ -28,7 +42,7 @@ function AlamatSection() {
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
         </svg>
-      )
+      ),
     };
     return icons[iconName] || null;
   };
@@ -41,10 +55,24 @@ function AlamatSection() {
           <div>
             <h3 className="text-lg font-bold text-white mb-3">Kontak Kami</h3>
             <div className="space-y-2 text-sm text-slate-300">
-              <p><strong>Alamat:</strong> {contactInfo.alamat}</p>
-              <p><strong>Telepon:</strong> {contactInfo.telepon}</p>
-              <p><strong>Email:</strong> <a href={`mailto:${contactInfo.email}`} className="hover:text-white">{contactInfo.email}</a></p>
-              <p><strong>Jam:</strong> {contactInfo.jam_operasional}</p>
+              <p>
+                <strong>Alamat:</strong> {contactInfo.alamat}
+              </p>
+              <p>
+                <strong>Telepon:</strong> {contactInfo.telepon}
+              </p>
+              <p>
+                <strong>Email:</strong>{" "}
+                <a
+                  href={`mailto:${contactInfo.email}`}
+                  className="hover:text-white"
+                >
+                  {contactInfo.email}
+                </a>
+              </p>
+              <p>
+                <strong>Jam:</strong> {contactInfo.jam_operasional}
+              </p>
             </div>
           </div>
 
@@ -84,7 +112,11 @@ function AlamatSection() {
             </div>
             <div className="w-full h-40 gap-4 rounded-lg">
               <p className="font-semibold">Scan Me or Click Me</p>
-              <a href="https://star-survei3a.kemenimipas.go.id/ly/kInMQzVh" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://star-survei3a.kemenimipas.go.id/ly/kInMQzVh"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
                   src="/images/qr-scan.webp"
                   alt="QR Code"
@@ -96,7 +128,8 @@ function AlamatSection() {
         </div>
 
         <div className="border-t border-slate-700 mt-8 pt-4 text-center text-slate-500 text-xs">
-          © {new Date().getFullYear()} Lembaga Pemasyarakatan Kelas IIA Karawang. All rights reserved.
+          © {new Date().getFullYear()} Lembaga Pemasyarakatan Kelas IIA
+          Karawang. All rights reserved.
         </div>
       </div>
     </section>
@@ -104,4 +137,3 @@ function AlamatSection() {
 }
 
 export default AlamatSection;
-

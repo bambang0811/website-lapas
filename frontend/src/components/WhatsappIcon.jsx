@@ -1,9 +1,9 @@
-import React from 'react'
+import React from "react";
 
 export default function WhatsAppFloatingButton() {
   const message = encodeURIComponent(
-    "Halo, saya mau melaporkan sesuatu terkait..."
-  )
+    "Halo, saya mau melaporkan sesuatu terkait...",
+  );
 
   return (
     <a
@@ -18,5 +18,5 @@ export default function WhatsAppFloatingButton() {
         className="size-10 hover:scale-110 transition-transform"
       />
     </a>
-  )
+  );
 }

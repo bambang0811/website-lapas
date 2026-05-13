@@ -1,15 +1,15 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
-import beritaService from '../../services/beritaService';
-import Button from '../common/Button';
-import Card from '../common/Card';
+import { useEffect, useState, useRef, useCallback } from "react";
+import beritaService from "../../services/beritaService";
+import Button from "../common/Button";
+import Card from "../common/Card";
 
 const initialForm = {
-  judul: '',
-  excerpt: '',
-  konten: '',
-  kategori: '',
-  gambar: '',
-  status: 'published'
+  judul: "",
+  excerpt: "",
+  konten: "",
+  kategori: "",
+  gambar: "",
+  status: "published",
 };
 
 function BeritaManager() {
@@ -17,19 +17,21 @@ function BeritaManager() {
   const [formData, setFormData] = useState(initialForm);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [imagePreview, setImagePreview] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
+  const [isUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const loadBeritaData = useCallback(async () => {
     try {
       const data = await beritaService.getAll();
       setBeritaList(data);
     } catch (error) {
-      console.error('Error loading berita:', error);
-      setError('Gagal memuat data berita');
+      console.error("Error loading berita:", error);
+      setError("Gagal memuat data berita");
     }
   }, []);
 
@@ -41,90 +43,106 @@ function BeritaManager() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e, forcedStatus = null) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
-    if (!formData.judul || !formData.excerpt || !formData.konten || !formData.kategori) {
-      setError('Semua field yang ditandai wajib diisi.');
+    if (
+      !formData.judul ||
+      !formData.excerpt ||
+      !formData.konten ||
+      !formData.kategori
+    ) {
+      setError("Semua field yang ditandai wajib diisi.");
       return;
     }
 
     // Use forced status if provided, otherwise use form status
-    const submitData = forcedStatus ? { ...formData, status: forcedStatus } : formData;
+    const submitData = forcedStatus
+      ? { ...formData, status: forcedStatus }
+      : formData;
 
     try {
       const payload = new FormData();
-      payload.append('judul', submitData.judul);
-      payload.append('excerpt', submitData.excerpt);
-      payload.append('konten', submitData.konten);
-      payload.append('kategori', submitData.kategori);
-      payload.append('status', submitData.status || 'draft');
-      payload.append('penulis', submitData.penulis || 'Admin LAPAS');
+      payload.append("judul", submitData.judul);
+      payload.append("excerpt", submitData.excerpt);
+      payload.append("konten", submitData.konten);
+      payload.append("kategori", submitData.kategori);
+      payload.append("status", submitData.status || "draft");
+      payload.append("penulis", submitData.penulis || "Admin LAPAS");
       if (submitData.tanggal_publikasi) {
-        payload.append('tanggal_publikasi', submitData.tanggal_publikasi);
+        payload.append("tanggal_publikasi", submitData.tanggal_publikasi);
       }
 
       if (submitData.gambar instanceof File) {
-        payload.append('gambar', submitData.gambar);
-      } else if (typeof submitData.gambar === 'string' && submitData.gambar !== '') {
-        payload.append('gambar_url', submitData.gambar);
+        payload.append("gambar", submitData.gambar);
+      } else if (
+        typeof submitData.gambar === "string" &&
+        submitData.gambar !== ""
+      ) {
+        payload.append("gambar_url", submitData.gambar);
       }
 
       if (isEditing && selectedId !== null) {
         await beritaService.update(selectedId, payload);
-        setMessage('Berita berhasil diperbarui.');
+        setMessage("Berita berhasil diperbarui.");
       } else {
         await beritaService.add(payload);
-        setMessage('Berita baru berhasil ditambahkan.');
+        setMessage("Berita baru berhasil ditambahkan.");
       }
       setFormData(initialForm);
       setIsEditing(false);
       setSelectedId(null);
-      setImagePreview('');
+      setImagePreview("");
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
       await loadBeritaData();
     } catch (err) {
       console.error(err);
-      setError('Terjadi kesalahan saat menyimpan berita.');
+      setError("Terjadi kesalahan saat menyimpan berita.");
     }
   };
 
   const handleEdit = (item) => {
-    const existingImage = item.gambar_url || item.gambar || '';
+    const existingImage = item.gambar_url || item.gambar || "";
     setFormData({
       judul: item.judul,
       excerpt: item.excerpt,
       konten: item.konten,
       kategori: item.kategori,
       gambar: existingImage,
-      status: item.status || 'published', // Keep existing status for editing
-      penulis: item.penulis || 'Admin LAPAS',
-      tanggal_publikasi: item.tanggal_publikasi || ''
+      status: item.status || "published", // Keep existing status for editing
+      penulis: item.penulis || "Admin LAPAS",
+      tanggal_publikasi: item.tanggal_publikasi || "",
     });
     setSelectedId(item.id);
     setIsEditing(true);
-    setMessage('');
-    setError('');
-    setImagePreview(existingImage ? (existingImage.startsWith('http') ? existingImage : `http://localhost:5000${existingImage}`) : '');
+    setMessage("");
+    setError("");
+    setImagePreview(
+      existingImage
+        ? existingImage.startsWith("http")
+          ? existingImage
+          : `${API_URL}${existingImage}`
+        : "",
+    );
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus berita ini?')) return;
+    if (!window.confirm("Yakin ingin menghapus berita ini?")) return;
     try {
       await beritaService.delete(id);
-      setMessage('Berita berhasil dihapus.');
+      setMessage("Berita berhasil dihapus.");
       await loadBeritaData();
     } catch (err) {
       console.error(err);
-      setError('Terjadi kesalahan saat menghapus berita.');
+      setError("Terjadi kesalahan saat menghapus berita.");
     }
   };
 
@@ -132,11 +150,11 @@ function BeritaManager() {
     setFormData(initialForm);
     setIsEditing(false);
     setSelectedId(null);
-    setError('');
-    setMessage('');
-    setImagePreview('');
+    setError("");
+    setMessage("");
+    setImagePreview("");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -144,43 +162,43 @@ function BeritaManager() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) {
-      setImagePreview('');
-      setFormData({ ...formData, gambar: '' });
+      setImagePreview("");
+      setFormData({ ...formData, gambar: "" });
       return;
     }
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('File harus berupa gambar (JPG, PNG, GIF, dll)');
+    if (!file.type.startsWith("image/")) {
+      setError("File harus berupa gambar (JPG, PNG, GIF, dll)");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError('Ukuran file maksimal 5MB');
+      setError("Ukuran file maksimal 5MB");
       return;
     }
 
-    setError('');
+    setError("");
     setFormData({ ...formData, gambar: file });
     setImagePreview(URL.createObjectURL(file));
   };
 
   // Remove selected image
   const removeImage = () => {
-    setImagePreview('');
-    setFormData({ ...formData, gambar: '' });
+    setImagePreview("");
+    setFormData({ ...formData, gambar: "" });
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const getImageUrl = (gambar) => {
     if (!gambar) return null;
-    if (typeof gambar !== 'string') return gambar;
-    if (gambar.startsWith('data:') || gambar.startsWith('http')) return gambar;
-    if (gambar.startsWith('/')) return `http://localhost:5000${gambar}`;
-    return `http://localhost:5000/${gambar}`;
+    if (typeof gambar !== "string") return gambar;
+    if (gambar.startsWith("data:") || gambar.startsWith("http")) return gambar;
+    if (gambar.startsWith("/")) return `${API_URL}${gambar}`;
+    return `${API_URL}/${gambar}`;
   };
 
   return (
@@ -188,7 +206,7 @@ function BeritaManager() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6 lg:col-span-1">
           <h2 className="text-xl font-heading font-semibold text-gray-900 mb-4">
-            {isEditing ? 'Edit Berita' : 'Tambah Berita'}
+            {isEditing ? "Edit Berita" : "Tambah Berita"}
           </h2>
 
           {error && (
@@ -204,7 +222,9 @@ function BeritaManager() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Judul</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Judul
+              </label>
               <input
                 name="judul"
                 value={formData.judul}
@@ -214,7 +234,9 @@ function BeritaManager() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Excerpt</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Excerpt
+              </label>
               <textarea
                 name="excerpt"
                 rows={3}
@@ -225,7 +247,9 @@ function BeritaManager() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Konten</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Konten
+              </label>
               <textarea
                 name="konten"
                 rows={4}
@@ -236,7 +260,9 @@ function BeritaManager() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Kategori
+              </label>
               <input
                 name="kategori"
                 value={formData.kategori}
@@ -247,7 +273,9 @@ function BeritaManager() {
 
             {/* Image Upload Section */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Gambar Berita</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gambar Berita
+              </label>
               <div className="space-y-3">
                 <input
                   ref={fileInputRef}
@@ -289,24 +317,29 @@ function BeritaManager() {
               <div className="flex items-center gap-3">
                 <Button
                   type="button"
-                  onClick={(e) => handleSubmit(e, 'published')}
+                  onClick={(e) => handleSubmit(e, "published")}
                   className="flex-1"
                   disabled={isUploading}
                 >
-                  {isEditing ? 'Update & Publish' : 'Publish Berita'}
+                  {isEditing ? "Update & Publish" : "Publish Berita"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={(e) => handleSubmit(e, 'draft')}
+                  onClick={(e) => handleSubmit(e, "draft")}
                   className="flex-1"
                   disabled={isUploading}
                 >
-                  {isEditing ? 'Update Draft' : 'Save as Draft'}
+                  {isEditing ? "Update Draft" : "Save as Draft"}
                 </Button>
               </div>
               {isEditing && (
-                <Button type="button" variant="outline" onClick={handleCancel} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="w-full"
+                >
                   Batal
                 </Button>
               )}
@@ -317,8 +350,12 @@ function BeritaManager() {
         <Card className="p-6 lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-heading font-semibold text-gray-900">Daftar Berita</h2>
-              <p className="text-sm text-gray-600">Kelola semua berita yang tersimpan di local storage.</p>
+              <h2 className="text-xl font-heading font-semibold text-gray-900">
+                Daftar Berita
+              </h2>
+              <p className="text-sm text-gray-600">
+                Kelola semua berita yang tersimpan di local storage.
+              </p>
             </div>
           </div>
 
@@ -340,23 +377,39 @@ function BeritaManager() {
                         />
                       )}
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{item.judul}</h3>
-                        <p className="text-sm text-gray-500">{item.tanggal} • {item.kategori}</p>
-                        <p className="mt-2 text-gray-700 line-clamp-2">{item.excerpt}</p>
-                        <span className={`inline-block px-2 py-1 text-xs rounded-full mt-2 ${
-                          item.status === 'published'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {item.status === 'published' ? 'Published' : 'Draft'}
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {item.judul}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {item.tanggal} • {item.kategori}
+                        </p>
+                        <p className="mt-2 text-gray-700 line-clamp-2">
+                          {item.excerpt}
+                        </p>
+                        <span
+                          className={`inline-block px-2 py-1 text-xs rounded-full mt-2 ${
+                            item.status === "published"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {item.status === "published" ? "Published" : "Draft"}
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-2"> 
-                      <Button variant="secondary" size="sm" onClick={() => handleEdit(item)}>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleEdit(item)}
+                      >
                         Edit
                       </Button>
-                      <Button variant="danger" size="sm" onClick={() => handleDelete(item.id)}>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(item.id)}
+                      >
                         Hapus
                       </Button>
                     </div>

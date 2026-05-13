@@ -9,19 +9,27 @@ function SurveiSection() {
             </h2>
             <div className="h-1 w-16 bg-blue-600 rounded-full mb-4" />
             <p className="text-lg text-slate-700 mb-6 leading-relaxed">
-              Bantu kami memberikan layanan terbaik dengan mengisi survei kepuasan masyarakat. Masukan dan saran Anda sangat berharga untuk peningkatan kualitas pelayanan LAPAS Kelas IIA Karawang.
+              Bantu kami memberikan layanan terbaik dengan mengisi survei
+              kepuasan masyarakat. Masukan dan saran Anda sangat berharga untuk
+              peningkatan kualitas pelayanan LAPAS Kelas IIA Karawang.
             </p>
             <div className="space-y-3 text-slate-700">
               <p className="flex items-center gap-3">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">✓</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                  ✓
+                </span>
                 Diperlukan waktu hanya 5 menit
               </p>
               <p className="flex items-center gap-3">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">✓</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                  ✓
+                </span>
                 Jawaban Anda dijaga kerahasiaannya
               </p>
               <p className="flex items-center gap-3">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">✓</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                  ✓
+                </span>
                 Terima kasih atas kontribusi Anda
               </p>
             </div>
