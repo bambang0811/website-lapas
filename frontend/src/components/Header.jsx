@@ -24,7 +24,7 @@ function Header() {
               <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
                 Lembaga Pemasyarakatan
               </div>
-              <div className="text-base font-bold">Kelas II A Karawang</div>
+              <div className="text-base font-bold">Kelas IIA Karawang</div>
             </div>
           </div>
 

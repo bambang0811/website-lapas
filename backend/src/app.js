@@ -14,13 +14,21 @@ const app = express();
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
-app.use(
-  cors({
-    origin: CLIENT_URL,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  }),
-);
+// Flexible CORS for localhost on any port
+const corsOptions = {
+  origin: function(origin, callback) {
+    // Allow requests from localhost on any port, or if no origin header (same-origin requests)
+    if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "10mb" }));
 

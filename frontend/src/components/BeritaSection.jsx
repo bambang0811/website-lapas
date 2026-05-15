@@ -24,6 +24,53 @@ function BeritaSection() {
     return text.substring(0, maxLength) + "...";
   }, []);
 
+  const formatKonten = useCallback((konten) => {
+    if (!konten) return null;
+
+    if (/<[a-z][\s\S]*>/i.test(konten)) {
+      return (
+        <div
+          className="prose max-w-none"
+          dangerouslySetInnerHTML={{ __html: konten }}
+        />
+      );
+    }
+
+    const paragraphs = konten
+      .replace(/\r\n/g, "\n")
+      .split(/\n\s*\n/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+
+    return (
+      <div className="prose max-w-none">
+        {paragraphs.map((paragraph, index) => (
+          <p key={index} className="mb-4 text-slate-700 leading-relaxed">
+            {paragraph.split("\n").map((line, lineIndex) => (
+              <span key={lineIndex}>
+                {line}
+                {lineIndex < paragraph.split("\n").length - 1 ? <br /> : null}
+              </span>
+            ))}
+          </p>
+        ))}
+      </div>
+    );
+  }, []);
+
+  const handleShare = useCallback((item) => {
+    const pageUrl = `${window.location.origin}/#berita`;
+    const imageUrl = item.gambar_url ? `${API_URL}${item.gambar_url}` : "";
+    const shareText = `${item.judul}\n\n${item.excerpt || ""}\n\n${pageUrl}${imageUrl ? `\n\n${imageUrl}` : ""}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(whatsappUrl, "_blank");
+  }, [API_URL]);
+
+  const handleBeritaLainnya = useCallback(() => {
+    setSelectedBerita(null);
+    window.location.hash = "#berita";
+  }, []);
+
   if (loading) {
     return (
       <section id="berita" className="section-padding bg-white">
@@ -155,27 +202,26 @@ function BeritaSection() {
 
                 {selectedBerita.gambar_url && (
                   <img
-<<<<<<< Updated upstream
                     src={`${API_URL}${selectedBerita.gambar_url}`}
-=======
-                    src={`http://localhost:5000${selectedBerita.gambar_url}`}
->>>>>>> Stashed changes
                     alt={selectedBerita.judul}
                     className="w-full h-80 object-cover rounded-lg"
                   />
                 )}
 
-                <div className="prose max-w-none">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: selectedBerita.konten,
-                    }}
-                  />
-                </div>
+                {formatKonten(selectedBerita.konten)}
 
-                <div className="flex gap-3">
-                  <Button className="w-full">Bagikan</Button>
-                  <Button variant="secondary" className="w-full">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    className="w-full"
+                    onClick={() => handleShare(selectedBerita)}
+                  >
+                    Bagikan
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleBeritaLainnya}
+                  >
                     Berita Lainnya
                   </Button>
                 </div>
