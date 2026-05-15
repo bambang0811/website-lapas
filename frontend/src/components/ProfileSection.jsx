@@ -157,16 +157,33 @@ function ProfileSection() {
 
       case "layanan":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-8">
             {profile.layanan.services.map((service, index) => (
               <Card
                 key={index}
-                className="p-6 shadow-sm border border-slate-200"
+                className="p-8 shadow-sm border border-slate-200"
               >
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">
+                <h4 className="text-2xl font-bold text-slate-900 mb-4">
                   {service.title}
                 </h4>
-                <p className="text-slate-600">{service.description}</p>
+                <p className="text-slate-700 whitespace-pre-line mb-6 leading-relaxed">
+                  {service.description}
+                </p>
+                {service.links && service.links.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {service.links.map((link, linkIndex) => (
+                      <a
+                        key={linkIndex}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </Card>
             ))}
           </div>

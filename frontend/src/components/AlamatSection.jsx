@@ -1,18 +1,11 @@
 function AlamatSection() {
   const contactInfo = {
-<<<<<<< Updated upstream
     alamat:
       "Jl. Surotokunto No.110, Warungbambu, Kec. Karawang Tim., Karawang, Jawa Barat 41371",
-    telepon: "(0264) 841234",
-    email: "info@lapaskarawang.go.id",
+    telepon: "0822 2080 3434",
+    email: "lp2akarawang@gmail.com",
     jam_operasional:
-      "Senin - Kamis: 08:30 - 14:00 WIB | Jumat-Sabtu: 08:30 - 11:15 WIB",
-=======
-    alamat: 'Jl. Surotokunto No.110, Warungbambu, Kec. Karawang Tim., Karawang, Jawa Barat 41371',
-    telepon: '0822 2080 3434',
-    email: ' lp2akarawang@gmail.com',
-    jam_operasional: 'Selasa - Kamis: 08:00 - 14:30 | Sabtu: 08:00 - 11:30 WIB'
->>>>>>> Stashed changes
+      "Selasa - Kamis: 08:00 - 14:30 | Sabtu: 08:00 - 11:30 WIB",
   };
 
   const socialLinks = [

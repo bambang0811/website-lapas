@@ -27,40 +27,58 @@
     "heading": "Layanan",
     "services": [
       {
-        "title": "Penerimaan dan Pendaftaran Narapidana Baru",
-        "description": "Layanan penerimaan dan pendaftaran resmi untuk narapidana baru yang masuk ke LAPAS Kelas IIA Karawang."
+        "title": "Pendaftaran Kunjungan Online",
+        "description": "FORMULIR ANTREAN KUNJUNGAN TAHANAN DAN NARAPIDANA LEMBAGA PEMASYARAKATAN KELAS IIA KARAWANG",
+        "links": [
+          {
+            "label": "Formulir Pendaftaran Kunjungan",
+            "url": "https://docs.google.com/forms/d/e/1FAIpQLSeCr0UvU7Vg40yEWxW7DCxNtM1TvA3dVc4FTO5RaHlRZMXsIA/closedform"
+          },
+          {
+            "label": "Ketentuan Layanan Kunjungan",
+            "url": "https://drive.google.com/drive/folders/1zLItFGVDdFYPO-xx69ilIzQ9OX4yNyKF"
+          }
+        ]
       },
       {
-        "title": "Pembebasan Narapidana",
-        "description": "Layanan pemrosesan pembebasan narapidana baik pembebasan murni, pembebasan bersyarat (PB), cuti bersyarat (CB), maupun cuti menjelang bebas (CMB)."
+        "title": "LAYANAN INTEGRASI ONLINE",
+        "description": "Layanan Integrasi online Lapas Kelas IIA Karawang digunakan untuk mempermudah keluarga warga binaan pemasyarakatan untuk melakukan pengusulan program integrasi (PB,CB,CMB,CMK dan Asimilasi).\n\nBerikut syarat yang diperlukan untuk pengusulan program Integrasi online kelas IIA Karawang :\n1. Fotocopy Kartu Tanda Penduduk (KTP) atau Keterangan Domisili Penjamin\n2. Fotocopy Kartu Keluarga (KK) Penjamin\n3. Fotocopy Kartu Keluarga (KK) Warga Binaan apabila tidak satu KK dengan Penjamin\n4. Materai Rp 10.000 (3pcs)",
+        "links": [
+          {
+            "label": "Formulir Pembebasan Bersyarat (PB)",
+            "url": "https://drive.google.com/file/d/1VDX0VbD1QAzfvGVUg9fCS3NcZs5fnizx/view?usp=drive_link"
+          },
+          {
+            "label": "Formulir Cuti Bersyarat (CB)",
+            "url": "https://drive.google.com/file/d/1DcAtXNg0r8vKgL8y4075Q9Y6dTRwNoT1/view"
+          },
+          {
+            "label": "Formulir Cuti Menjelang Bebas (CMB)",
+            "url": "https://drive.google.com/file/d/1tLMKtUCIRJhLQDEtAhKJJjryM6PRDCKG/view"
+          },
+          {
+            "label": "Formulir Cuti Mengunjugi Keluarga (CMK)",
+            "url": "https://drive.google.com/file/d/115eS4B05ySsz5j9DeJYWndd5LVVxMy_K/view"
+          },
+          {
+            "label": "Formulir Program Asimilasi",
+            "url": "https://drive.google.com/file/d/1z_RfiBIoqiAOS_5vzZeY8UMFTPhBXoFi/view"
+          },
+          {
+            "label": "Upload Formulir PB, CB, CMK, CMB dan Asimilasi",
+            "url": "https://docs.google.com/forms/d/e/1FAIpQLScnTLmr6pMynL48WGOoaVdJFVDuV-ooeB5VLsEDatg7s7xs2g/viewform"
+          }
+        ]
       },
       {
-        "title": "Pembebasan Bersyarat (PB) - Integrasi Online",
-        "description": "Pengusulan program pembebasan bersyarat secara online untuk memudahkan keluarga warga binaan pemasyarakatan."
-      },
-      {
-        "title": "Cuti Bersyarat (CB) - Integrasi Online",
-        "description": "Pengusulan cuti bersyarat melalui layanan integrasi online untuk program reintegrasi sosial."
-      },
-      {
-        "title": "Cuti Menjelang Bebas (CMB) - Integrasi Online",
-        "description": "Layanan pengajuan cuti menjelang bebas secara online sebagai tahap persiapan pembebasan akhir."
-      },
-      {
-        "title": "Pemberian Remisi",
-        "description": "Layanan pemberian pengurangan masa pidana berdasarkan perilaku dan prestasi warga binaan."
-      },
-      {
-        "title": "Layanan Video Call Kunjungan",
-        "description": "Layanan kunjungan berbasis teknologi informasi untuk mempertemukan warga binaan dengan keluarganya melalui video call."
-      },
-      {
-        "title": "Layanan Pengaduan dan Konsultasi",
-        "description": "Saluran resmi untuk menerima pengaduan, saran, dan pertanyaan dari masyarakat terkait pelayanan kami."
-      },
-      {
-        "title": "Layanan Kesehatan dan Perawatan Lanjutan",
-        "description": "Layanan rujukan perawatan kesehatan lanjutan bagi warga binaan di fasilitas kesehatan di luar LAPAS."
+        "title": "IZIN LUAR BIASA (ILB) MELAYAT / MEMBESUK SAKIT KERAS, MENJADI WALI NIKAH, DAN MEMBAGI WARISAN)",
+        "description": "Layanan pengajuan izin luar biasa untuk berbagai keperluan mendesak keluarga warga binaan pemasyarakatan.",
+        "links": [
+          {
+            "label": "Folder Formulir ILB",
+            "url": "https://drive.google.com/drive/folders/1s4mHDBucvoWT0_E0lC5_m6YQvGn59cmk"
+          }
+        ]
       }
     ]
   },

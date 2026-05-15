@@ -15,7 +15,7 @@ export default function WhatsAppFloatingButton() {
       <img
         src="/icons/whatsapp-icon.svg"
         alt="WhatsApp"
-        className="size-10 hover:scale-110 transition-transform"
+        className="w-16 h-16 hover:scale-110 transition-transform"
       />
     </a>
   );
