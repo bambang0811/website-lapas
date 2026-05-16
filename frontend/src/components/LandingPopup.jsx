@@ -45,7 +45,7 @@ function LandingPopup() {
     return null;
   }
 
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const apiUrl = import.meta.env.VITE_API_URL || "https://lapas-backend.onrender.com";
   const imageSrc = popup.image_url.startsWith("http")
     ? popup.image_url
     : `${apiUrl}${popup.image_url}`;

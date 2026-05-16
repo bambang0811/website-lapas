@@ -1,7 +1,7 @@
 // Service untuk mengelola data berita
 // Menggunakan backend API untuk persistensi data
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://lapas-backend.onrender.com/api';
 
 class BeritaService {
   constructor() {

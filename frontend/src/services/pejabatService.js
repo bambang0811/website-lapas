@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api/pejabat";
+const BASE_URL = "https://lapas-backend.onrender.com/api/pejabat";
 
 async function getPejabat() {
   const res = await fetch(BASE_URL);

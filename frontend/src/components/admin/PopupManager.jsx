@@ -17,7 +17,7 @@ function PopupManager() {
   const [preview, setPreview] = useState("");
   const fileInputRef = useRef(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://lapas-backend.onrender.com";
 
   const loadPopups = useCallback(async () => {
     try {

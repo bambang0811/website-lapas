@@ -56,6 +56,6 @@ app.use((req, res, next) => {
 
 app.use("/uploads", express.static(path.resolve("public", "uploads")));
 
-console.log("Uploads served from: http://localhost:5000/uploads");
+console.log("Uploads served from: https://lapas-backend.onrender.com/uploads");
 
 export default app;
