@@ -12,23 +12,31 @@ import popupRoutes from "./routes/popup.routes.js";
 
 const app = express();
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+// CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://lapaskarawang.page.gd"
+];
 
-// Flexible CORS for localhost on any port
-const corsOptions = {
-  origin: function(origin, callback) {
-    // Allow requests from localhost on any port, or if no origin header (same-origin requests)
-    if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+app.use(cors({
+  origin: function (origin, callback) {
+    // izinkan request tanpa origin
+    if (!origin) return callback(null, true);
+
+    // izinkan localhost & domain production
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.startsWith("http://localhost:") ||
+      origin.startsWith("http://127.0.0.1:")
+    ) {
       callback(null, true);
     } else {
-      callback(new Error('CORS not allowed'));
+      callback(null, true); // sementara izinkan semua agar aman
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
-};
-
-app.use(cors(corsOptions));
+}));
 
 app.use(express.json({ limit: "10mb" }));
 
@@ -47,6 +55,7 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// FIX DOUBLE SLASH
 app.use((req, res, next) => {
   if (req.url.includes("//")) {
     req.url = req.url.replace(/\/\/+/, "/");
@@ -54,6 +63,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// STATIC UPLOADS
 app.use("/uploads", express.static(path.resolve("public", "uploads")));
 
 console.log("Uploads served from: https://lapas-backend.onrender.com/uploads");
