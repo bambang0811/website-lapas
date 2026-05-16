@@ -1,9 +1,16 @@
+import express from "express";
+import cors from "cors";
 import app from "./app.js";
 
+const PORT = process.env.PORT || 5000;
+
+// CORS
 app.use(cors({
-  origin: [
-    'https://lapaskarawang.page.gd',
-    'http://localhost:5173'
-  ],
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+
+app.listen(PORT, () => {
+  console.log(`Backend running on http://localhost:${PORT}`);
+});
