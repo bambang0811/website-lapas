@@ -4,9 +4,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // IMPORT ROUTES
-import beritaRoutes from "./routes/beritaRoutes.js";
-import pejabatRoutes from "./routes/pejabatRoutes.js";
-import popupRoutes from "./routes/popupRoutes.js";
+import beritaRoutes from "./routes/berita.routes.js";
+import pejabatRoutes from "./routes/pejabat.routes.js";
+import popupRoutes from "./routes/popup.routes.js";
 
 const app = express();
 
