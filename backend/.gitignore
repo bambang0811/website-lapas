@@ -44,8 +44,6 @@ Thumbs.db
 # Nodemon cache
 .nodemon/
 
-# Uploads
-uploads/
 
 # Database dumps
 *.sql
