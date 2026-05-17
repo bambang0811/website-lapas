@@ -4,11 +4,15 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import path from "path";
+import { fileURLToPath } from "url";
 
 import authRoutes from "./routes/auth.routes.js";
 import beritaRoutes from "./routes/berita.routes.js";
 import pejabatRoutes from "./routes/pejabat.routes.js";
 import popupRoutes from "./routes/popup.routes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -32,7 +36,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Static uploads
-app.use("/uploads", express.static(path.resolve("public", "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
 
 console.log("Uploads served from: https://lapas-backend.onrender.com/uploads");
 
