@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import beritaRoutes from "./routes/berita.routes.js";
 import pejabatRoutes from "./routes/pejabat.routes.js";
 import popupRoutes from "./routes/popup.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(
 app.use("/api/berita", beritaRoutes);
 app.use("/api/pejabat", pejabatRoutes);
 app.use("/api/popup", popupRoutes);
+app.use("/api/auth", authRoutes);
 
 // TEST
 app.get("/", (req, res) => {
