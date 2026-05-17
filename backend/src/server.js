@@ -3,21 +3,32 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const app = express();
+// IMPORT ROUTES
+import beritaRoutes from "./routes/beritaRoutes.js";
+import pejabatRoutes from "./routes/pejabatRoutes.js";
+import popupRoutes from "./routes/popupRoutes.js";
 
-app.use(cors());
+const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// MIDDLEWARE
+app.use(cors());
 app.use(express.json());
 
+// STATIC UPLOADS
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "../public/uploads"))
 );
 
-// Test route
+// API ROUTES
+app.use("/api/berita", beritaRoutes);
+app.use("/api/pejabat", pejabatRoutes);
+app.use("/api/popup", popupRoutes);
+
+// TEST
 app.get("/", (req, res) => {
   res.send("Backend running...");
 });
@@ -25,7 +36,6 @@ app.get("/", (req, res) => {
 // PORT
 const PORT = process.env.PORT || 5000;
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
