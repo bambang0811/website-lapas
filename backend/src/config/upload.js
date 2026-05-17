@@ -22,7 +22,8 @@ const normalizeFilename = (originalname) => {
 const createStorage = (subfolder) =>
   multer.diskStorage({
     destination: (req, file, cb) => {
-      const uploadDir = path.join(__dirname, "public", "uploads", subfolder);
+      // Save uploads to the public/uploads folder at the project root
+      const uploadDir = path.join(__dirname, "..", "..", "public", "uploads", subfolder);
 
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
