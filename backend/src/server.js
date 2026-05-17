@@ -7,9 +7,24 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Middleware
 app.use(express.json());
 
+// Static uploads
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "../public/uploads"))
 );
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Backend running...");
+});
+
+// PORT
+const PORT = process.env.PORT || 5000;
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
