@@ -1,7 +1,5 @@
-import app from "./app.js";
+app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-});
+app.use("/api/berita", beritaRoutes);
