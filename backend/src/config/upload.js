@@ -2,11 +2,27 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const normalizeFilename = (originalname) => {
+  const ext = path.extname(originalname).toLowerCase();
+  let name = path.basename(originalname, ext);
+
+  if (name.toLowerCase().endsWith(ext)) {
+    name = name.slice(0, -ext.length);
+  }
+
+  name = name.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9\-_.]/g, "");
+  return `${Date.now()}-${name}${ext}`;
+};
 
 const createStorage = (subfolder) =>
   multer.diskStorage({
     destination: (req, file, cb) => {
-      const uploadDir = path.join("public", "uploads", subfolder);
+      const uploadDir = path.join(__dirname, "public", "uploads", subfolder);
 
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
@@ -16,7 +32,7 @@ const createStorage = (subfolder) =>
       cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-      const uniqueName = `${Date.now()}-${file.originalname}`;
+      const uniqueName = normalizeFilename(file.originalname);
       console.log("Uploading:", uniqueName);
       cb(null, uniqueName);
     },

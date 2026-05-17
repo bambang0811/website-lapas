@@ -58,13 +58,25 @@ function BeritaSection() {
     );
   }, []);
 
-  const handleShare = useCallback((item) => {
-    const pageUrl = `${window.location.origin}/#berita`;
-    const imageUrl = item.gambar_url ? `${API_URL}${item.gambar_url}` : "";
-    const shareText = `${item.judul}\n\n${item.excerpt || ""}\n\n${pageUrl}${imageUrl ? `\n\n${imageUrl}` : ""}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-    window.open(whatsappUrl, "_blank");
-  }, [API_URL]);
+  const getImageUrl = useCallback(
+    (imagePath) => {
+      if (!imagePath) return "/images/placeholder-news.svg";
+      if (imagePath.startsWith("http")) return imagePath;
+      return `${API_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+    },
+    [API_URL],
+  );
+
+  const handleShare = useCallback(
+    (item) => {
+      const pageUrl = `${window.location.origin}/#berita`;
+      const imageUrl = item.gambar_url ? getImageUrl(item.gambar_url) : "";
+      const shareText = `${item.judul}\n\n${item.excerpt || ""}\n\n${pageUrl}${imageUrl ? `\n\n${imageUrl}` : ""}`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(whatsappUrl, "_blank");
+    },
+    [API_URL, getImageUrl],
+  );
 
   const handleBeritaLainnya = useCallback(() => {
     setSelectedBerita(null);
@@ -117,12 +129,12 @@ function BeritaSection() {
                 <div className="h-64 bg-slate-200 overflow-hidden">
                   {item.gambar_url ? (
                     <img
-                      src={item.gambar_url}
+                      src={getImageUrl(item.gambar_url)}
                       alt={item.judul}
                       className="w-full h-full object-cover"
                       loading={index < 3 ? "eager" : "lazy"}
                       onError={(e) => {
-                        e.currentTarget.src = "/images/placeholder-news.jpg";
+                        e.currentTarget.src = "/images/placeholder-news.svg";
                       }}
                     />
                   ) : (
@@ -202,9 +214,12 @@ function BeritaSection() {
 
                 {selectedBerita.gambar_url && (
                   <img
-                    src={`${API_URL}${selectedBerita.gambar_url}`}
+                    src={getImageUrl(selectedBerita.gambar_url)}
                     alt={selectedBerita.judul}
                     className="w-full h-80 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "/images/placeholder-news.svg";
+                    }}
                   />
                 )}
 
