@@ -72,7 +72,7 @@ export async function createBerita(req, res) {
 export async function updateBerita(req, res) {
   try {
     const { id } = req.params;
-    const {
+    let {
       judul,
       excerpt,
       konten,
@@ -106,7 +106,8 @@ export async function updateBerita(req, res) {
         excerpt,
         konten,
         imageUrl,
-        tanggal_publikasi,
+        // Ensure a sensible default for tanggal_publikasi when not provided
+        tanggal_publikasi || new Date(),
         penulis,
         kategori,
         status,
@@ -119,7 +120,9 @@ export async function updateBerita(req, res) {
     const [rows] = await pool.query("SELECT * FROM berita WHERE id = ?", [id]);
     res.json(rows[0]);
   } catch (error) {
-    console.error(error);
+    console.error("updateBerita error:", error);
+    console.error("Request body:", req.body);
+    console.error("Request file:", req.file);
     res.status(500).json({ message: "Gagal memperbarui berita" });
   }
 }
