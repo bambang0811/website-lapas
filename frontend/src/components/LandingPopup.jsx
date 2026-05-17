@@ -45,11 +45,13 @@ function LandingPopup() {
     return null;
   }
 
-  const apiUrl = import.meta.env.VITE_API_URL || "https://lapas-backend.onrender.com";
-  const imageSrc = popup.image_url.startsWith("http")
-    ? popup.image_url
-    : `${apiUrl}${popup.image_url}`;
+ const API_URL = import.meta.env.VITE_API_URL;
 
+const imageSrc = popup.image_url
+  ? popup.image_url.startsWith("http")
+    ? popup.image_url
+    : `${API_URL}${popup.image_url}`
+  : "";
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4 py-8">
       <div

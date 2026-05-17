@@ -117,7 +117,7 @@ function BeritaSection() {
                 <div className="h-64 bg-slate-200 overflow-hidden">
                   {item.gambar_url ? (
                     <img
-                      src={`${API_URL}${item.gambar_url}`}
+                      src={item.gambar_url}
                       alt={item.judul}
                       className="w-full h-full object-cover"
                       loading={index < 3 ? "eager" : "lazy"}

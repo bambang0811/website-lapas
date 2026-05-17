@@ -46,11 +46,18 @@ function ProfileSection() {
   };
 
   const getPejabatImage = (foto_url) => {
-    if (!foto_url) return "https://picsum.photos/400/300?blur=2";
-    if (foto_url.startsWith("http")) return foto_url;
-    if (foto_url.startsWith("/")) return `${API_URL}${foto_url}`;
-    return `${API_URL}/${foto_url}`;
-  };
+  if (!foto_url) {
+    return "https://picsum.photos/400/300?blur=2";
+  }
+
+  // jika sudah full URL
+  if (foto_url.startsWith("http")) {
+    return foto_url;
+  }
+
+  // pastikan slash tidak double
+  return `${API_URL}${foto_url.startsWith("/") ? "" : "/"}${foto_url}`;
+};
 
   if (!profile || loading) {
     return (
