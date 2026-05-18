@@ -1,4 +1,5 @@
 import { getPool } from "../config/database.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 const pool = getPool();
 
@@ -43,7 +44,8 @@ export async function createBerita(req, res) {
     let imageUrl = gambar_url || null;
 
     if (req.file) {
-      imageUrl = `/uploads/berita/${req.file.filename}`;
+      const uploaded = await uploadToCloudinary(req.file.buffer, "berita");
+      imageUrl = uploaded.secure_url;
     }
 
     const [result] = await pool.query(
@@ -96,7 +98,8 @@ export async function updateBerita(req, res) {
     }
 
     if (req.file) {
-      imageUrl = `/uploads/berita/${req.file.filename}`;
+      const uploaded = await uploadToCloudinary(req.file.buffer, "berita");
+      imageUrl = uploaded.secure_url;
     }
 
     const [result] = await pool.query(

@@ -55,7 +55,14 @@ const createUpload = (subfolder) =>
     fileFilter,
   });
 
+const createMemoryUpload = () =>
+  multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter,
+  });
+
 export const uploadPejabat = createUpload("pejabat");
-export const uploadBerita = createUpload("berita");
+export const uploadBerita = createMemoryUpload();
 export const uploadPopup = createUpload("popup");
 export default uploadPejabat;
