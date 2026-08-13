@@ -19,7 +19,7 @@ function BeritaManager() {
   const [selectedId, setSelectedId] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [imagePreview, setImagePreview] = useState("");
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [isUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -47,6 +47,34 @@ function BeritaManager() {
     });
   };
 
+  const parseImageList = useCallback((imageValue) => {
+    if (!imageValue) return [];
+
+    if (Array.isArray(imageValue)) {
+      return imageValue.filter(Boolean);
+    }
+
+    if (typeof imageValue !== "string") return [];
+
+    try {
+      const parsed = JSON.parse(imageValue);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(Boolean);
+      }
+    } catch {
+      // Fallback below if value is not JSON.
+    }
+
+    if (imageValue.includes(",")) {
+      return imageValue
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    return [imageValue];
+  }, []);
+
   const handleSubmit = async (e, forcedStatus = null) => {
     e.preventDefault();
     setError("");
@@ -62,7 +90,6 @@ function BeritaManager() {
       return;
     }
 
-    // Use forced status if provided, otherwise use form status
     const submitData = forcedStatus
       ? { ...formData, status: forcedStatus }
       : formData;
@@ -79,13 +106,21 @@ function BeritaManager() {
         payload.append("tanggal_publikasi", submitData.tanggal_publikasi);
       }
 
-      if (submitData.gambar instanceof File) {
+      if (Array.isArray(submitData.gambar)) {
+        submitData.gambar.forEach((file) => {
+          if (file instanceof File) {
+            payload.append("gambar", file);
+          }
+        });
+      } else if (submitData.gambar instanceof File) {
         payload.append("gambar", submitData.gambar);
-      } else if (
-        typeof submitData.gambar === "string" &&
-        submitData.gambar !== ""
-      ) {
-        payload.append("gambar_url", submitData.gambar);
+      } else if (typeof submitData.gambar === "string" && submitData.gambar !== "") {
+        const images = parseImageList(submitData.gambar);
+        if (images.length > 1) {
+          payload.append("gambar_url", JSON.stringify(images));
+        } else {
+          payload.append("gambar_url", images[0]);
+        }
       }
 
       if (isEditing && selectedId !== null) {
@@ -98,7 +133,7 @@ function BeritaManager() {
       setFormData(initialForm);
       setIsEditing(false);
       setSelectedId(null);
-      setImagePreview("");
+      setImagePreviews([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -110,14 +145,14 @@ function BeritaManager() {
   };
 
   const handleEdit = (item) => {
-    const existingImage = item.gambar_url || item.gambar || "";
+    const existingImages = parseImageList(item.gambar_url || item.gambar || "");
     setFormData({
       judul: item.judul,
       excerpt: item.excerpt,
       konten: item.konten,
       kategori: item.kategori,
-      gambar: existingImage,
-      status: item.status || "published", // Keep existing status for editing
+      gambar: existingImages,
+      status: item.status || "published",
       penulis: item.penulis || "Admin LAPAS",
       tanggal_publikasi: item.tanggal_publikasi || "",
     });
@@ -125,12 +160,12 @@ function BeritaManager() {
     setIsEditing(true);
     setMessage("");
     setError("");
-    setImagePreview(
-      existingImage
-        ? existingImage.startsWith("http")
-          ? existingImage
-          : `${API_URL}${existingImage}`
-        : "",
+    setImagePreviews(
+      existingImages.map((image) =>
+        image.startsWith("http") || image.startsWith("data:")
+          ? image
+          : `${API_URL}${image.startsWith("/") ? "" : "/"}${image}`,
+      ),
     );
   };
 
@@ -152,41 +187,39 @@ function BeritaManager() {
     setSelectedId(null);
     setError("");
     setMessage("");
-    setImagePreview("");
+    setImagePreviews([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Handle image file selection
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) {
-      setImagePreview("");
+    const files = Array.from(e.target.files || []);
+    if (!files.length) {
+      setImagePreviews([]);
       setFormData({ ...formData, gambar: "" });
       return;
     }
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
+    const validFiles = files.filter((file) => file.type.startsWith("image/"));
+    if (validFiles.length !== files.length) {
       setError("File harus berupa gambar (JPG, PNG, GIF, dll)");
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    const oversized = validFiles.find((file) => file.size > 5 * 1024 * 1024);
+    if (oversized) {
       setError("Ukuran file maksimal 5MB");
       return;
     }
 
     setError("");
-    setFormData({ ...formData, gambar: file });
-    setImagePreview(URL.createObjectURL(file));
+    setFormData({ ...formData, gambar: validFiles });
+    setImagePreviews(validFiles.map((file) => URL.createObjectURL(file)));
   };
 
-  // Remove selected image
   const removeImage = () => {
-    setImagePreview("");
+    setImagePreviews([]);
     setFormData({ ...formData, gambar: "" });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -195,10 +228,13 @@ function BeritaManager() {
 
   const getImageUrl = (gambar) => {
     if (!gambar) return null;
-    if (typeof gambar !== "string") return gambar;
-    if (gambar.startsWith("data:") || gambar.startsWith("http")) return gambar;
-    if (gambar.startsWith("/")) return `${API_URL}${gambar}`;
-    return `${API_URL}/${gambar}`;
+
+    const imageList = parseImageList(gambar);
+    const firstImage = imageList[0];
+    if (!firstImage) return null;
+    if (firstImage.startsWith("data:") || firstImage.startsWith("http")) return firstImage;
+    if (firstImage.startsWith("/")) return `${API_URL}${firstImage}`;
+    return `${API_URL}/${firstImage}`;
   };
 
   return (
@@ -281,6 +317,7 @@ function BeritaManager() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={handleImageChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   disabled={isUploading}
@@ -291,13 +328,17 @@ function BeritaManager() {
                     Mengupload gambar...
                   </div>
                 )}
-                {imagePreview && (
-                  <div className="relative">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full max-w-sm h-48 object-cover rounded-lg border border-gray-300"
-                    />
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={`${preview}-${index}`} className="relative">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full aspect-[4/5] object-cover rounded-lg border border-gray-300"
+                        />
+                      </div>
+                    ))}
                     <button
                       type="button"
                       onClick={removeImage}
@@ -308,7 +349,7 @@ function BeritaManager() {
                   </div>
                 )}
                 <p className="text-xs text-gray-500">
-                  Format: JPG, PNG, GIF. Maksimal 5MB. Rekomendasi: 800x600px
+                  Format: JPG, PNG, GIF. Maksimal 5MB per file. Rekomendasi: 1080x1350px (rasio 4:5). Dapat upload beberapa foto sekaligus.
                 </p>
               </div>
             </div>
@@ -373,7 +414,7 @@ function BeritaManager() {
                         <img
                           src={getImageUrl(item.gambar_url || item.gambar)}
                           alt={item.judul}
-                          className="w-20 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                          className="w-20 aspect-[4/5] object-cover rounded-lg border border-gray-200 flex-shrink-0"
                         />
                       )}
                       <div className="flex-1">

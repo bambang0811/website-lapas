@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useBerita } from "../hooks/useBerita";
 import Card from "./common/Card";
 import Button from "./common/Button";
@@ -6,6 +6,7 @@ import Button from "./common/Button";
 function BeritaSection() {
   const { berita, loading, error } = useBerita();
   const [selectedBerita, setSelectedBerita] = useState(null);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
   const API_URL =
     import.meta.env.VITE_API_URL ||
@@ -61,25 +62,82 @@ function BeritaSection() {
     );
   }, []);
 
-  const getImageUrl = useCallback(
-    (imagePath) => {
-      if (!imagePath) return "/images/placeholder-news.svg";
-      if (imagePath.startsWith("http")) return imagePath;
-      return `${API_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+  const normalizeImageList = useCallback((imageValue) => {
+    if (!imageValue) return [];
+    if (Array.isArray(imageValue)) {
+      return imageValue.filter(Boolean);
+    }
+
+    if (typeof imageValue !== "string") return [];
+
+    try {
+      const parsed = JSON.parse(imageValue);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(Boolean);
+      }
+    } catch {
+      // Ignore invalid JSON and fallback to single value.
+    }
+
+    if (imageValue.includes(",")) {
+      return imageValue
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    return [imageValue];
+  }, []);
+
+  const getImageUrlList = useCallback(
+    (imageValue) => {
+      const images = normalizeImageList(imageValue);
+      return images
+        .map((imagePath) => {
+          if (!imagePath) return "";
+          if (imagePath.startsWith("http") || imagePath.startsWith("data:")) {
+            return imagePath;
+          }
+          return `${API_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+        })
+        .filter(Boolean);
     },
-    [API_URL],
+    [API_URL, normalizeImageList],
+  );
+
+  const getImageUrl = useCallback(
+    (imageValue) => getImageUrlList(imageValue)[0] || "/images/placeholder-news.svg",
+    [getImageUrlList],
   );
 
   const handleShare = useCallback(
     (item) => {
       const pageUrl = `${window.location.origin}/#berita`;
-      const imageUrl = item.gambar_url ? getImageUrl(item.gambar_url) : "";
+      const imageUrl = getImageUrl(item.gambar_url || item.gambar);
       const shareText = `${item.judul}\n\n${item.excerpt || ""}\n\n${pageUrl}${imageUrl ? `\n\n${imageUrl}` : ""}`;
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
       window.open(whatsappUrl, "_blank");
     },
-    [API_URL, getImageUrl],
+    [getImageUrl],
   );
+
+  const selectedImages = useMemo(
+    () => getImageUrlList(selectedBerita?.gambar_url || selectedBerita?.gambar),
+    [selectedBerita, getImageUrlList],
+  );
+
+  useEffect(() => {
+    if (!selectedBerita || selectedImages.length <= 1) {
+      setActiveSlideIndex(0);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setActiveSlideIndex((prev) => (prev + 1) % selectedImages.length);
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [selectedBerita, selectedImages]);
 
   const handleBeritaLainnya = useCallback(() => {
     setSelectedBerita(null);
@@ -127,25 +185,29 @@ function BeritaSection() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mb-20">
-            {berita.slice(0, 6).map((item, index) => (
-              <Card key={item.id} hover shadow="md" className="h-full">
-                <div className="h-64 bg-slate-200 overflow-hidden">
-                  {item.gambar_url ? (
-                    <img
-                      src={getImageUrl(item.gambar_url)}
-                      alt={item.judul}
-                      className="w-full h-full object-cover"
-                      loading={index < 3 ? "eager" : "lazy"}
-                      onError={(e) => {
-                        e.currentTarget.src = "/images/placeholder-news.svg";
-                      }}
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center bg-slate-300 text-slate-700">
-                      Tidak ada gambar
-                    </div>
-                  )}
-                </div>
+            {berita.slice(0, 6).map((item, index) => {
+              const itemImages = getImageUrlList(item.gambar_url || item.gambar);
+              const coverImage = itemImages[0] || "/images/placeholder-news.svg";
+
+              return (
+                <Card key={item.id} hover shadow="md" className="h-full">
+                  <div className="aspect-[4/5] w-full overflow-hidden bg-slate-200">
+                    {itemImages.length > 0 ? (
+                      <img
+                        src={coverImage}
+                        alt={item.judul}
+                        className="h-full w-full object-cover"
+                        loading={index < 3 ? "eager" : "lazy"}
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/placeholder-news.svg";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-slate-300 text-slate-700">
+                        Tidak ada gambar
+                      </div>
+                    )}
+                  </div>
 
                 <div className="p-6">
                   <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
@@ -164,17 +226,18 @@ function BeritaSection() {
                     {truncateText(item.excerpt, 120)}
                   </p>
 
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    className="w-full"
-                    onClick={() => setSelectedBerita(item)}
-                  >
-                    Baca Selengkapnya
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      className="w-full"
+                      onClick={() => setSelectedBerita(item)}
+                    >
+                      Baca Selengkapnya
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
 
           {berita.length === 0 && (
@@ -215,15 +278,37 @@ function BeritaSection() {
                   <span>{selectedBerita.penulis}</span>
                 </div>
 
-                {selectedBerita.gambar_url && (
-                  <img
-                    src={getImageUrl(selectedBerita.gambar_url)}
-                    alt={selectedBerita.judul}
-                    className="w-full h-80 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.src = "/images/placeholder-news.svg";
-                    }}
-                  />
+                {selectedImages.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="relative overflow-hidden rounded-lg">
+                      <img
+                        src={selectedImages[activeSlideIndex]}
+                        alt={selectedBerita.judul}
+                        className="w-full aspect-[4/5] object-cover rounded-lg"
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/placeholder-news.svg";
+                        }}
+                      />
+
+                      {selectedImages.length > 1 && (
+                        <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2">
+                          {selectedImages.map((_, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => setActiveSlideIndex(index)}
+                              className={`h-2.5 w-2.5 rounded-full transition ${
+                                index === activeSlideIndex
+                                  ? "bg-white shadow-md"
+                                  : "bg-white/60"
+                              }`}
+                              aria-label={`Pilih foto ${index + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 {formatKonten(selectedBerita.konten)}

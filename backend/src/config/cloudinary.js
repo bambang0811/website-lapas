@@ -15,6 +15,10 @@ export function uploadToCloudinary(buffer, folder = "lapas_berita") {
       {
         folder,
         resource_type: "image",
+        width: 1080,
+        height: 1350,
+        crop: "fill",
+        gravity: "auto",
       },
       (error, result) => {
         if (error) {

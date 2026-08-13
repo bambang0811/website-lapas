@@ -3,6 +3,66 @@ import { uploadToCloudinary } from "../config/cloudinary.js";
 
 const pool = getPool();
 
+const normalizeImageList = (imageValue, uploadedFiles = []) => {
+  const parsed = [];
+
+  if (Array.isArray(imageValue)) {
+    imageValue.forEach((item) => {
+      if (item) parsed.push(item);
+    });
+  } else if (typeof imageValue === "string") {
+    const trimmed = imageValue.trim();
+    if (!trimmed) {
+      if (uploadedFiles.length) {
+        return uploadedFiles.map((file) => file?.secure_url || file);
+      }
+      return [];
+    }
+
+    try {
+      const jsonValue = JSON.parse(trimmed);
+      if (Array.isArray(jsonValue)) {
+        jsonValue.forEach((item) => {
+          if (item) parsed.push(item);
+        });
+      }
+    } catch {
+      if (trimmed.includes(",")) {
+        trimmed
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .forEach((item) => parsed.push(item));
+      } else {
+        parsed.push(trimmed);
+      }
+    }
+  }
+
+  if (uploadedFiles.length) {
+    uploadedFiles.forEach((file) => {
+      if (file?.secure_url) parsed.push(file.secure_url);
+      else if (typeof file === "string") parsed.push(file);
+    });
+  }
+
+  return [...new Set(parsed.filter(Boolean))];
+};
+
+const uploadFilesToCloudinary = async (files = []) => {
+  const uploadedUrls = [];
+
+  for (const file of files) {
+    if (!file || !file.buffer) continue;
+    const uploaded = await uploadToCloudinary(file.buffer, "berita");
+    if (uploaded?.secure_url) {
+      uploadedUrls.push(uploaded.secure_url);
+    }
+  }
+
+  return uploadedUrls;
+};
+
 export async function getAllBerita(req, res) {
   try {
     const [rows] = await pool.query(
@@ -41,12 +101,11 @@ export async function createBerita(req, res) {
       kategori,
       status,
     } = req.body;
-    let imageUrl = gambar_url || null;
 
-    if (req.file) {
-      const uploaded = await uploadToCloudinary(req.file.buffer, "berita");
-      imageUrl = uploaded.secure_url;
-    }
+    const uploadedFiles = req.files || [];
+    const uploadedUrls = await uploadFilesToCloudinary(uploadedFiles);
+    const imageList = normalizeImageList(gambar_url, uploadedUrls);
+    const imageUrl = imageList.length ? JSON.stringify(imageList) : null;
 
     const [result] = await pool.query(
       "INSERT INTO berita (judul, excerpt, konten, gambar_url, tanggal_publikasi, penulis, kategori, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -92,15 +151,17 @@ export async function updateBerita(req, res) {
       return res.status(404).json({ message: "Berita tidak ditemukan" });
     }
 
-    let imageUrl = existingRows[0].gambar_url;
+    const uploadedFiles = req.files || [];
+    const uploadedUrls = await uploadFilesToCloudinary(uploadedFiles);
+    let imageList = normalizeImageList(existingRows[0].gambar_url, []);
+
     if (typeof gambar_url !== "undefined") {
-      imageUrl = gambar_url;
+      imageList = normalizeImageList(gambar_url, uploadedUrls);
+    } else if (uploadedUrls.length) {
+      imageList = normalizeImageList([], uploadedUrls);
     }
 
-    if (req.file) {
-      const uploaded = await uploadToCloudinary(req.file.buffer, "berita");
-      imageUrl = uploaded.secure_url;
-    }
+    const imageUrl = imageList.length ? JSON.stringify(imageList) : null;
 
     const [result] = await pool.query(
       "UPDATE berita SET judul = ?, excerpt = ?, konten = ?, gambar_url = ?, tanggal_publikasi = ?, penulis = ?, kategori = ?, status = ? WHERE id = ?",
@@ -109,7 +170,6 @@ export async function updateBerita(req, res) {
         excerpt,
         konten,
         imageUrl,
-        // Ensure a sensible default for tanggal_publikasi when not provided
         tanggal_publikasi || new Date(),
         penulis,
         kategori,
@@ -125,7 +185,7 @@ export async function updateBerita(req, res) {
   } catch (error) {
     console.error("updateBerita error:", error);
     console.error("Request body:", req.body);
-    console.error("Request file:", req.file);
+    console.error("Request file:", req.files);
     res.status(500).json({ message: "Gagal memperbarui berita" });
   }
 }
