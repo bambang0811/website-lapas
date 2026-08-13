@@ -41,10 +41,10 @@ const createStorage = (subfolder) =>
 
 const fileFilter = (req, file, cb) => {
   console.log("File received:", file.originalname, file.mimetype);
-  if (file.mimetype.startsWith("image/")) {
+  if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files!"), false);
+    cb(new Error("Only image or video files!"), false);
   }
 };
 

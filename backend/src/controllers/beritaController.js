@@ -54,13 +54,35 @@ const uploadFilesToCloudinary = async (files = []) => {
 
   for (const file of files) {
     if (!file || !file.buffer) continue;
-    const uploaded = await uploadToCloudinary(file.buffer, "berita");
+    const isVideo =
+      file.mimetype?.startsWith("video/") ||
+      file.originalname?.match(/\.(mp4|webm|mov|m4v|avi)$/i);
+    const uploaded = await uploadToCloudinary(
+      file.buffer,
+      "berita",
+      isVideo ? "video" : "image",
+      isVideo
+        ? {}
+        : { width: 1080, height: 1350, crop: "fill", gravity: "auto" },
+    );
     if (uploaded?.secure_url) {
       uploadedUrls.push(uploaded.secure_url);
     }
   }
 
   return uploadedUrls;
+};
+
+const hasVideoColumn = async () => {
+  try {
+    const [rows] = await pool.query(
+      "SHOW COLUMNS FROM berita LIKE 'video_url'",
+    );
+    return rows.length > 0;
+  } catch (error) {
+    console.error("Gagal mengecek kolom video_url:", error);
+    return false;
+  }
 };
 
 export async function getAllBerita(req, res) {
@@ -96,16 +118,43 @@ export async function createBerita(req, res) {
       excerpt,
       konten,
       gambar_url,
+      video_url,
       tanggal_publikasi,
       penulis,
       kategori,
       status,
     } = req.body;
 
-    const uploadedFiles = req.files || [];
-    const uploadedUrls = await uploadFilesToCloudinary(uploadedFiles);
-    const imageList = normalizeImageList(gambar_url, uploadedUrls);
+    const uploadedFiles = req.files?.gambar || [];
+    const uploadedVideos = req.files?.video || [];
+    const uploadedImageUrls = await uploadFilesToCloudinary(uploadedFiles);
+    const uploadedVideoUrls = await uploadFilesToCloudinary(uploadedVideos);
+
+    const imageList = normalizeImageList(gambar_url, uploadedImageUrls);
     const imageUrl = imageList.length ? JSON.stringify(imageList) : null;
+    const finalVideoUrl = video_url || uploadedVideoUrls[0] || null;
+    const hasVideoField = await hasVideoColumn();
+
+    if (hasVideoField) {
+      const [result] = await pool.query(
+        "INSERT INTO berita (judul, excerpt, konten, gambar_url, video_url, tanggal_publikasi, penulis, kategori, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          judul,
+          excerpt,
+          konten,
+          imageUrl,
+          finalVideoUrl,
+          tanggal_publikasi || new Date(),
+          penulis,
+          kategori,
+          status || "published",
+        ],
+      );
+      const [rows] = await pool.query("SELECT * FROM berita WHERE id = ?", [
+        result.insertId,
+      ]);
+      return res.status(201).json(rows[0]);
+    }
 
     const [result] = await pool.query(
       "INSERT INTO berita (judul, excerpt, konten, gambar_url, tanggal_publikasi, penulis, kategori, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -138,30 +187,62 @@ export async function updateBerita(req, res) {
       excerpt,
       konten,
       gambar_url,
+      video_url,
       tanggal_publikasi,
       penulis,
       kategori,
       status,
     } = req.body;
     const [existingRows] = await pool.query(
-      "SELECT gambar_url FROM berita WHERE id = ?",
+      "SELECT gambar_url, video_url FROM berita WHERE id = ?",
       [id],
     );
     if (!existingRows.length) {
       return res.status(404).json({ message: "Berita tidak ditemukan" });
     }
 
-    const uploadedFiles = req.files || [];
-    const uploadedUrls = await uploadFilesToCloudinary(uploadedFiles);
-    let imageList = normalizeImageList(existingRows[0].gambar_url, []);
+    const uploadedFiles = req.files?.gambar || [];
+    const uploadedVideos = req.files?.video || [];
+    const uploadedImageUrls = await uploadFilesToCloudinary(uploadedFiles);
+    const uploadedVideoUrls = await uploadFilesToCloudinary(uploadedVideos);
 
+    let imageList = normalizeImageList(existingRows[0].gambar_url, []);
     if (typeof gambar_url !== "undefined") {
-      imageList = normalizeImageList(gambar_url, uploadedUrls);
-    } else if (uploadedUrls.length) {
-      imageList = normalizeImageList([], uploadedUrls);
+      imageList = normalizeImageList(gambar_url, uploadedImageUrls);
+    } else if (uploadedImageUrls.length) {
+      imageList = normalizeImageList([], uploadedImageUrls);
     }
 
     const imageUrl = imageList.length ? JSON.stringify(imageList) : null;
+    const finalVideoUrl =
+      typeof video_url !== "undefined"
+        ? video_url || null
+        : uploadedVideoUrls[0] || existingRows[0].video_url || null;
+
+    const hasVideoField = await hasVideoColumn();
+
+    if (hasVideoField) {
+      const [result] = await pool.query(
+        "UPDATE berita SET judul = ?, excerpt = ?, konten = ?, gambar_url = ?, video_url = ?, tanggal_publikasi = ?, penulis = ?, kategori = ?, status = ? WHERE id = ?",
+        [
+          judul,
+          excerpt,
+          konten,
+          imageUrl,
+          finalVideoUrl,
+          tanggal_publikasi || new Date(),
+          penulis,
+          kategori,
+          status,
+          id,
+        ],
+      );
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Berita tidak ditemukan" });
+      }
+      const [rows] = await pool.query("SELECT * FROM berita WHERE id = ?", [id]);
+      return res.json(rows[0]);
+    }
 
     const [result] = await pool.query(
       "UPDATE berita SET judul = ?, excerpt = ?, konten = ?, gambar_url = ?, tanggal_publikasi = ?, penulis = ?, kategori = ?, status = ? WHERE id = ?",
@@ -185,7 +266,7 @@ export async function updateBerita(req, res) {
   } catch (error) {
     console.error("updateBerita error:", error);
     console.error("Request body:", req.body);
-    console.error("Request file:", req.files);
+    console.error("Request files:", req.files);
     res.status(500).json({ message: "Gagal memperbarui berita" });
   }
 }

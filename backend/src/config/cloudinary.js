@@ -9,17 +9,35 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export function uploadToCloudinary(buffer, folder = "lapas_berita") {
+export function uploadToCloudinary(
+  buffer,
+  folder = "lapas_berita",
+  resourceType = "image",
+  options = {},
+) {
   return new Promise((resolve, reject) => {
+    const uploadOptions = {
+      folder,
+      resource_type: resourceType,
+      ...options,
+    };
+
+    if (resourceType === "image") {
+      uploadOptions.width = uploadOptions.width ?? 1080;
+      uploadOptions.height = uploadOptions.height ?? 1350;
+      uploadOptions.crop = uploadOptions.crop ?? "fill";
+      uploadOptions.gravity = uploadOptions.gravity ?? "auto";
+    }
+
+    if (resourceType === "video") {
+      uploadOptions.width = uploadOptions.width ?? 1080;
+      uploadOptions.height = uploadOptions.height ?? 1920;
+      uploadOptions.crop = uploadOptions.crop ?? "limit";
+      uploadOptions.quality = uploadOptions.quality ?? "auto";
+    }
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: "image",
-        width: 1080,
-        height: 1350,
-        crop: "fill",
-        gravity: "auto",
-      },
+      uploadOptions,
       (error, result) => {
         if (error) {
           return reject(error);

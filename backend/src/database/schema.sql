@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS berita (
   excerpt TEXT,
   konten LONGTEXT NOT NULL,
   gambar_url VARCHAR(500),
+  video_url VARCHAR(500),
   tanggal_publikasi DATETIME DEFAULT CURRENT_TIMESTAMP,
   penulis VARCHAR(100),
   kategori VARCHAR(100),

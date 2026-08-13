@@ -65,6 +65,7 @@ class BeritaService {
             excerpt: beritaData.excerpt,
             konten: beritaData.konten,
             gambar_url: beritaData.gambar_url || beritaData.gambar,
+            video_url: beritaData.video_url || beritaData.video,
             penulis: beritaData.penulis || 'Admin LAPAS',
             kategori: beritaData.kategori,
             status: beritaData.status || 'draft'
@@ -104,6 +105,7 @@ class BeritaService {
             excerpt: updateData.excerpt,
             konten: updateData.konten,
             gambar_url: updateData.gambar_url || updateData.gambar,
+            video_url: updateData.video_url || updateData.video,
             penulis: updateData.penulis || 'Admin LAPAS',
             kategori: updateData.kategori,
             status: updateData.status

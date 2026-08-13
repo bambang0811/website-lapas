@@ -110,6 +110,17 @@ function BeritaSection() {
     [getImageUrlList],
   );
 
+  const getVideoUrl = useCallback(
+    (videoValue) => {
+      if (!videoValue) return "";
+      if (videoValue.startsWith("http") || videoValue.startsWith("data:")) {
+        return videoValue;
+      }
+      return `${API_URL}${videoValue.startsWith("/") ? "" : "/"}${videoValue}`;
+    },
+    [API_URL],
+  );
+
   const handleShare = useCallback(
     (item) => {
       const pageUrl = `${window.location.origin}/#berita`;
@@ -187,12 +198,26 @@ function BeritaSection() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mb-20">
             {berita.slice(0, 6).map((item, index) => {
               const itemImages = getImageUrlList(item.gambar_url || item.gambar);
+              const videoUrl = getVideoUrl(item.video_url);
               const coverImage = itemImages[0] || "/images/placeholder-news.svg";
 
               return (
                 <Card key={item.id} hover shadow="md" className="h-full">
-                  <div className="aspect-[4/5] w-full overflow-hidden bg-slate-200">
-                    {itemImages.length > 0 ? (
+                  <div
+                    className={`w-full overflow-hidden bg-slate-200 ${
+                      videoUrl ? "aspect-[9/16]" : "aspect-[4/5]"
+                    }`}
+                  >
+                    {videoUrl ? (
+                      <video
+                        src={videoUrl}
+                        className="h-full w-full object-cover"
+                        muted
+                        playsInline
+                        autoPlay
+                        loop
+                      />
+                    ) : itemImages.length > 0 ? (
                       <img
                         src={coverImage}
                         alt={item.judul}
@@ -278,7 +303,31 @@ function BeritaSection() {
                   <span>{selectedBerita.penulis}</span>
                 </div>
 
-                {selectedImages.length > 0 && (
+                {selectedBerita.video_url ? (
+                  <div className="space-y-3">
+                    <video
+                      src={getVideoUrl(selectedBerita.video_url)}
+                      className="w-full aspect-[9/16] object-cover rounded-lg bg-slate-200"
+                      autoPlay
+                      muted
+                      loop
+                      controls
+                      playsInline
+                    />
+                    {selectedImages.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {selectedImages.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`${selectedBerita.judul} foto ${index + 1}`}
+                            className="h-24 w-full object-cover rounded-md"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : selectedImages.length > 0 ? (
                   <div className="space-y-3">
                     <div className="relative overflow-hidden rounded-lg">
                       <img
@@ -309,7 +358,7 @@ function BeritaSection() {
                       )}
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 {formatKonten(selectedBerita.konten)}
 

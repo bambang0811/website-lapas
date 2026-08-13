@@ -9,6 +9,10 @@ const initialForm = {
   konten: "",
   kategori: "",
   gambar: "",
+  video: "",
+  tanggal: "",
+  bulan: "",
+  tahun: "",
   status: "published",
 };
 
@@ -20,8 +24,10 @@ function BeritaManager() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [videoPreview, setVideoPreview] = useState("");
   const [isUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -46,6 +52,18 @@ function BeritaManager() {
       [e.target.name]: e.target.value,
     });
   };
+
+  const buildPublishDate = useCallback((data) => {
+    const day = Number(data.tanggal);
+    const month = Number(data.bulan);
+    const year = Number(data.tahun);
+
+    if (!day || !month || !year) {
+      return "";
+    }
+
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }, []);
 
   const parseImageList = useCallback((imageValue) => {
     if (!imageValue) return [];
@@ -96,14 +114,16 @@ function BeritaManager() {
 
     try {
       const payload = new FormData();
+      const manualPublishDate = buildPublishDate(submitData);
+
       payload.append("judul", submitData.judul);
       payload.append("excerpt", submitData.excerpt);
       payload.append("konten", submitData.konten);
       payload.append("kategori", submitData.kategori);
       payload.append("status", submitData.status || "draft");
       payload.append("penulis", submitData.penulis || "Admin LAPAS");
-      if (submitData.tanggal_publikasi) {
-        payload.append("tanggal_publikasi", submitData.tanggal_publikasi);
+      if (manualPublishDate) {
+        payload.append("tanggal_publikasi", manualPublishDate);
       }
 
       if (Array.isArray(submitData.gambar)) {
@@ -123,6 +143,12 @@ function BeritaManager() {
         }
       }
 
+      if (submitData.video instanceof File) {
+        payload.append("video", submitData.video);
+      } else if (typeof submitData.video === "string" && submitData.video !== "") {
+        payload.append("video_url", submitData.video);
+      }
+
       if (isEditing && selectedId !== null) {
         await beritaService.update(selectedId, payload);
         setMessage("Berita berhasil diperbarui.");
@@ -134,8 +160,12 @@ function BeritaManager() {
       setIsEditing(false);
       setSelectedId(null);
       setImagePreviews([]);
+      setVideoPreview("");
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+      if (videoInputRef.current) {
+        videoInputRef.current.value = "";
       }
       await loadBeritaData();
     } catch (err) {
@@ -146,12 +176,18 @@ function BeritaManager() {
 
   const handleEdit = (item) => {
     const existingImages = parseImageList(item.gambar_url || item.gambar || "");
+    const publishDate = item.tanggal_publikasi ? new Date(item.tanggal_publikasi) : null;
+
     setFormData({
       judul: item.judul,
       excerpt: item.excerpt,
       konten: item.konten,
       kategori: item.kategori,
       gambar: existingImages,
+      video: item.video_url || "",
+      tanggal: publishDate ? String(publishDate.getDate()) : "",
+      bulan: publishDate ? String(publishDate.getMonth() + 1) : "",
+      tahun: publishDate ? String(publishDate.getFullYear()) : "",
       status: item.status || "published",
       penulis: item.penulis || "Admin LAPAS",
       tanggal_publikasi: item.tanggal_publikasi || "",
@@ -166,6 +202,13 @@ function BeritaManager() {
           ? image
           : `${API_URL}${image.startsWith("/") ? "" : "/"}${image}`,
       ),
+    );
+    setVideoPreview(
+      item.video_url
+        ? item.video_url.startsWith("http") || item.video_url.startsWith("data:")
+          ? item.video_url
+          : `${API_URL}${item.video_url.startsWith("/") ? "" : "/"}${item.video_url}`
+        : "",
     );
   };
 
@@ -188,8 +231,12 @@ function BeritaManager() {
     setError("");
     setMessage("");
     setImagePreviews([]);
+    setVideoPreview("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (videoInputRef.current) {
+      videoInputRef.current.value = "";
     }
   };
 
@@ -218,11 +265,42 @@ function BeritaManager() {
     setImagePreviews(validFiles.map((file) => URL.createObjectURL(file)));
   };
 
+  const handleVideoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setVideoPreview("");
+      setFormData({ ...formData, video: "" });
+      return;
+    }
+
+    if (!file.type.startsWith("video/")) {
+      setError("File video tidak valid");
+      return;
+    }
+
+    if (file.size > 30 * 1024 * 1024) {
+      setError("Ukuran video maksimal 30MB");
+      return;
+    }
+
+    setError("");
+    setFormData({ ...formData, video: file });
+    setVideoPreview(URL.createObjectURL(file));
+  };
+
   const removeImage = () => {
     setImagePreviews([]);
     setFormData({ ...formData, gambar: "" });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const removeVideo = () => {
+    setVideoPreview("");
+    setFormData({ ...formData, video: "" });
+    if (videoInputRef.current) {
+      videoInputRef.current.value = "";
     }
   };
 
@@ -307,6 +385,43 @@ function BeritaManager() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tanggal Publikasi
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <input
+                  type="number"
+                  name="tanggal"
+                  min="1"
+                  max="31"
+                  placeholder="Tanggal"
+                  value={formData.tanggal}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <input
+                  type="number"
+                  name="bulan"
+                  min="1"
+                  max="12"
+                  placeholder="Bulan"
+                  value={formData.bulan}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <input
+                  type="number"
+                  name="tahun"
+                  min="2000"
+                  placeholder="Tahun"
+                  value={formData.tahun}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+
             {/* Image Upload Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -329,7 +444,7 @@ function BeritaManager() {
                   </div>
                 )}
                 {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 relative">
                     {imagePreviews.map((preview, index) => (
                       <div key={`${preview}-${index}`} className="relative">
                         <img
@@ -350,6 +465,43 @@ function BeritaManager() {
                 )}
                 <p className="text-xs text-gray-500">
                   Format: JPG, PNG, GIF. Maksimal 5MB per file. Rekomendasi: 1080x1350px (rasio 4:5). Dapat upload beberapa foto sekaligus.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Video Berita
+              </label>
+              <div className="space-y-3">
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  disabled={isUploading}
+                />
+                {videoPreview && (
+                  <div className="relative">
+                    <video
+                      src={videoPreview}
+                      controls
+                      autoPlay
+                      muted
+                      className="w-full aspect-[4/5] object-cover rounded-lg border border-gray-300 bg-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeVideo}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">
+                  Format: MP4, WebM, MOV. Maksimal 30MB.
                 </p>
               </div>
             </div>
