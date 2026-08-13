@@ -29,7 +29,7 @@ function BeritaManager() {
   const fileInputRef = useRef(null);
   const videoInputRef = useRef(null);
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const loadBeritaData = useCallback(async () => {
     try {
@@ -311,8 +311,13 @@ function BeritaManager() {
     const firstImage = imageList[0];
     if (!firstImage) return null;
     if (firstImage.startsWith("data:") || firstImage.startsWith("http")) return firstImage;
-    if (firstImage.startsWith("/")) return `${API_URL}${firstImage}`;
-    return `${API_URL}/${firstImage}`;
+
+    const normalized = firstImage.replace(/\\/g, "/");
+    if (normalized.startsWith("/uploads/")) return `${API_URL}${normalized}`;
+    if (normalized.startsWith("uploads/")) return `${API_URL}/${normalized}`;
+    if (normalized.startsWith("/")) return `${API_URL}${normalized}`;
+    if (normalized.includes("/")) return `${API_URL}/${normalized}`;
+    return `${API_URL}/uploads/berita/${normalized}`;
   };
 
   return (

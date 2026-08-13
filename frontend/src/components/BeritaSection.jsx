@@ -10,7 +10,7 @@ function BeritaSection() {
 
   const API_URL =
     import.meta.env.VITE_API_URL ||
-    (import.meta.env.VITE_API_BASE_URL || "https://lapas-backend.onrender.com/api")
+    (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api")
       .replace(/\/api\/?$/, "");
 
   const formatDate = useCallback((dateString) => {
@@ -98,7 +98,21 @@ function BeritaSection() {
           if (imagePath.startsWith("http") || imagePath.startsWith("data:")) {
             return imagePath;
           }
-          return `${API_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+
+          const normalized = imagePath.replace(/\\/g, "/");
+          if (normalized.startsWith("/uploads/")) {
+            return `${API_URL}${normalized}`;
+          }
+          if (normalized.startsWith("uploads/")) {
+            return `${API_URL}/${normalized}`;
+          }
+          if (normalized.startsWith("/")) {
+            return `${API_URL}${normalized}`;
+          }
+          if (normalized.includes("/")) {
+            return `${API_URL}/${normalized}`;
+          }
+          return `${API_URL}/uploads/berita/${normalized}`;
         })
         .filter(Boolean);
     },
@@ -110,15 +124,39 @@ function BeritaSection() {
     [getImageUrlList],
   );
 
-  const getVideoUrl = useCallback(
-    (videoValue) => {
-      if (!videoValue) return "";
-      if (videoValue.startsWith("http") || videoValue.startsWith("data:")) {
-        return videoValue;
+  const normaliseMediaPath = useCallback(
+    (mediaValue) => {
+      if (!mediaValue) return "";
+      if (mediaValue.startsWith("http") || mediaValue.startsWith("data:")) {
+        return mediaValue;
       }
-      return `${API_URL}${videoValue.startsWith("/") ? "" : "/"}${videoValue}`;
+
+      const normalized = mediaValue.replace(/\\/g, "/");
+
+      if (normalized.startsWith("/uploads/")) {
+        return `${API_URL}${normalized}`;
+      }
+
+      if (normalized.startsWith("uploads/")) {
+        return `${API_URL}/${normalized}`;
+      }
+
+      if (normalized.startsWith("/")) {
+        return `${API_URL}${normalized}`;
+      }
+
+      if (normalized.includes("/")) {
+        return `${API_URL}/${normalized}`;
+      }
+
+      return `${API_URL}/uploads/berita/${normalized}`;
     },
     [API_URL],
+  );
+
+  const getVideoUrl = useCallback(
+    (videoValue) => normaliseMediaPath(videoValue),
+    [normaliseMediaPath],
   );
 
   const handleShare = useCallback(

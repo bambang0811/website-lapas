@@ -1,7 +1,24 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { getPool } from "../config/database.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const pool = getPool();
+
+const saveLocalUpload = (file, folder = "berita") => {
+  const uploadDir = path.join(__dirname, "..", "public", "uploads", folder);
+  fs.mkdirSync(uploadDir, { recursive: true });
+
+  const safeName = (file.originalname || "upload").replace(/[^a-zA-Z0-9._-]/g, "_");
+  const finalName = `${Date.now()}-${safeName}`;
+  const filePath = path.join(uploadDir, finalName);
+  fs.writeFileSync(filePath, file.buffer);
+
+  return `/uploads/${folder}/${finalName}`;
+};
 
 const normalizeImageList = (imageValue, uploadedFiles = []) => {
   const parsed = [];
@@ -54,19 +71,32 @@ const uploadFilesToCloudinary = async (files = []) => {
 
   for (const file of files) {
     if (!file || !file.buffer) continue;
-    const isVideo =
-      file.mimetype?.startsWith("video/") ||
-      file.originalname?.match(/\.(mp4|webm|mov|m4v|avi)$/i);
-    const uploaded = await uploadToCloudinary(
-      file.buffer,
-      "berita",
-      isVideo ? "video" : "image",
-      isVideo
-        ? {}
-        : { width: 1080, height: 1350, crop: "fill", gravity: "auto" },
-    );
-    if (uploaded?.secure_url) {
-      uploadedUrls.push(uploaded.secure_url);
+
+    try {
+      const isVideo =
+        file.mimetype?.startsWith("video/") ||
+        file.originalname?.match(/\.(mp4|webm|mov|m4v|avi)$/i);
+
+      const uploaded = await uploadToCloudinary(
+        file.buffer,
+        "berita",
+        isVideo ? "video" : "image",
+        isVideo
+          ? { quality: "auto" }
+          : { width: 1080, height: 1350, crop: "fill", gravity: "auto" },
+      );
+
+      if (uploaded?.secure_url) {
+        uploadedUrls.push(uploaded.secure_url);
+        continue;
+      }
+    } catch (error) {
+      console.warn("Cloudinary upload gagal, fallback ke lokal:", error.message);
+    }
+
+    const localUrl = saveLocalUpload(file, "berita");
+    if (localUrl) {
+      uploadedUrls.push(localUrl);
     }
   }
 
