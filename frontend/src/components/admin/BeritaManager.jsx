@@ -29,7 +29,7 @@ function BeritaManager() {
   const fileInputRef = useRef(null);
   const videoInputRef = useRef(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://lapas-backend.onrender.com/api";
 
   const loadBeritaData = useCallback(async () => {
     try {

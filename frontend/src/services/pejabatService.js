@@ -1,4 +1,6 @@
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api").replace(/\/api\/?$/, "") + "/pejabat";
+const BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL ||
+    "https://lapas-backend.onrender.com/api").replace(/\/$/, "") + "/pejabat";
 
 async function getPejabat() {
   const res = await fetch(BASE_URL);

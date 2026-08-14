@@ -17,7 +17,10 @@ function PopupManager() {
   const [preview, setPreview] = useState("");
   const fileInputRef = useRef(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://lapas-backend.onrender.com";
+  const BACKEND_URL = (
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://lapas-backend.onrender.com/api"
+  ).replace(/\/api\/?$/, "");
 
   const loadPopups = useCallback(async () => {
     try {
@@ -33,9 +36,27 @@ function PopupManager() {
     loadPopups();
   }, [loadPopups]);
 
+  const getImageSrc = (image_url) => {
+    if (!image_url) return "";
+
+    if (
+      image_url.startsWith("http://") ||
+      image_url.startsWith("https://") ||
+      image_url.startsWith("data:")
+    ) {
+      return image_url;
+    }
+
+    return `${BACKEND_URL}${
+      image_url.startsWith("/") ? "" : "/"
+    }${image_url}`;
+  };
+
   const handleImageChange = (e) => {
     setError("");
+
     const file = e.target.files?.[0];
+
     if (!file) {
       setForm((prev) => ({ ...prev, image: null }));
       setPreview("");
@@ -52,31 +73,34 @@ function PopupManager() {
       return;
     }
 
-    setForm((prev) => ({ ...prev, image: file }));
+    setForm((prev) => ({
+      ...prev,
+      image: file,
+    }));
+
     setPreview(URL.createObjectURL(file));
   };
 
   const handleSelect = (popup) => {
     setSelectedId(popup.id);
+
     setForm({
       image: null,
       active: popup.active === 1 || popup.active === true,
     });
-    setPreview(
-      popup.image_url &&
-        (popup.image_url.startsWith("http")
-          ? popup.image_url
-          : `${API_URL}${popup.image_url}`),
-    );
+
+    setPreview(getImageSrc(popup.image_url));
+
     setMessage("");
     setError("");
   };
 
   const handleChange = (e) => {
-    const { name, type, checked } = e.target;
+    const { name, type, checked, value } = e.target;
+
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : e.target.value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -86,6 +110,7 @@ function PopupManager() {
     setPreview("");
     setError("");
     setMessage("");
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -93,6 +118,7 @@ function PopupManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
     setMessage("");
 
@@ -102,9 +128,11 @@ function PopupManager() {
     }
 
     const payload = new FormData();
+
     if (form.image instanceof File) {
       payload.append("image", form.image);
     }
+
     payload.append("active", form.active ? "1" : "0");
 
     try {
@@ -115,8 +143,9 @@ function PopupManager() {
         await popupService.create(payload);
         setMessage("Popup berhasil dibuat.");
       }
+
       resetForm();
-      loadPopups();
+      await loadPopups();
     } catch (err) {
       console.error(err);
       setError("Terjadi kesalahan saat menyimpan popup.");
@@ -128,18 +157,18 @@ function PopupManager() {
 
     try {
       await popupService.delete(id);
+
       setMessage("Popup berhasil dihapus.");
-      if (selectedId === id) resetForm();
-      loadPopups();
+
+      if (selectedId === id) {
+        resetForm();
+      }
+
+      await loadPopups();
     } catch (err) {
       console.error(err);
       setError("Gagal menghapus popup.");
     }
-  };
-
-  const getImageSrc = (image_url) => {
-    if (!image_url) return "";
-    return image_url.startsWith("http") ? image_url : `${API_URL}${image_url}`;
   };
 
   return (
@@ -148,6 +177,7 @@ function PopupManager() {
         <h1 className="text-2xl font-heading font-bold text-gray-900">
           Kelola Popup Landing Page
         </h1>
+
         <p className="text-gray-600">
           Upload gambar popup yang tampil di halaman utama untuk pengunjung
           baru.
@@ -165,6 +195,7 @@ function PopupManager() {
               {error}
             </div>
           )}
+
           {message && (
             <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 px-4 py-3">
               {message}
@@ -176,6 +207,7 @@ function PopupManager() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Gambar Popup
               </label>
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -204,7 +236,11 @@ function PopupManager() {
                 id="activePopup"
                 className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
-              <label htmlFor="activePopup" className="text-sm text-gray-700">
+
+              <label
+                htmlFor="activePopup"
+                className="text-sm text-gray-700"
+              >
                 Aktifkan popup untuk pengunjung baru
               </label>
             </div>
@@ -213,6 +249,7 @@ function PopupManager() {
               <Button type="submit">
                 {selectedId ? "Perbarui" : "Simpan"}
               </Button>
+
               <button
                 type="button"
                 onClick={resetForm}
@@ -228,12 +265,14 @@ function PopupManager() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Daftar Popup
           </h2>
+
           <div className="space-y-3">
             {popups.length === 0 && (
               <p className="text-sm text-gray-500">
                 Belum ada popup yang tersimpan.
               </p>
             )}
+
             {popups.map((popup) => (
               <div
                 key={popup.id}
@@ -244,10 +283,12 @@ function PopupManager() {
                     <p className="font-semibold text-gray-900">
                       Popup #{popup.id}
                     </p>
+
                     <p className="text-sm text-gray-600">
                       Status: {popup.active ? "Aktif" : "Nonaktif"}
                     </p>
                   </div>
+
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -256,6 +297,7 @@ function PopupManager() {
                     >
                       Edit
                     </button>
+
                     <button
                       type="button"
                       onClick={() => handleDelete(popup.id)}
@@ -265,6 +307,7 @@ function PopupManager() {
                     </button>
                   </div>
                 </div>
+
                 {popup.image_url && (
                   <img
                     src={getImageSrc(popup.image_url)}

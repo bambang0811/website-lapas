@@ -9,9 +9,12 @@ function ProfileSection() {
   const [activeTab, setActiveTab] = useState("profil");
   const [pejabatData, setPejabatData] = useState([]);
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const BACKEND_URL = (
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://lapas-backend.onrender.com/api"
+  ).replace(/\/api\/?$/, "");
 
-  // NEW: pagination state
+  // Pagination
   const [visibleCount, setVisibleCount] = useState(6);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -27,6 +30,7 @@ function ProfileSection() {
         setLoading(false);
       }
     };
+
     loadData();
   }, []);
 
@@ -34,11 +38,14 @@ function ProfileSection() {
     pejabatService
       .getPejabat()
       .then((data) => setPejabatData(data))
-      .catch(console.error);
+      .catch((error) => {
+        console.error("Error loading pejabat:", error);
+      });
   }, []);
 
   const handleLoadMore = () => {
     setLoadingMore(true);
+
     setTimeout(() => {
       setVisibleCount((prev) => prev + 6);
       setLoadingMore(false);
@@ -46,18 +53,18 @@ function ProfileSection() {
   };
 
   const getPejabatImage = (foto_url) => {
-  if (!foto_url) {
-    return "https://picsum.photos/400/300?blur=2";
-  }
+    if (!foto_url) {
+      return "https://picsum.photos/400/300?blur=2";
+    }
 
-  // jika sudah full URL
-  if (foto_url.startsWith("http")) {
-    return foto_url;
-  }
+    // Jika sudah URL lengkap, langsung gunakan
+    if (foto_url.startsWith("http")) {
+      return foto_url;
+    }
 
-  // pastikan slash tidak double
-  return `${API_URL}${foto_url.startsWith("/") ? "" : "/"}${foto_url}`;
-};
+    // Jika berupa /uploads/pejabat/...
+    return `${BACKEND_URL}${foto_url.startsWith("/") ? "" : "/"}${foto_url}`;
+  };
 
   if (!profile || loading) {
     return (
@@ -82,7 +89,6 @@ function ProfileSection() {
             key={pejabat.id}
             className="bg-white shadow-md rounded-lg overflow-hidden"
           >
-            {/* Background + Padding */}
             <div className="bg-slate-100 p-3">
               <img
                 src={getPejabatImage(pejabat.foto_url)}
@@ -96,13 +102,15 @@ function ProfileSection() {
               <h4 className="text-lg font-semibold text-slate-900">
                 {pejabat.nama}
               </h4>
-              <p className="text-slate-600 text-sm">{pejabat.jabatan}</p>
+
+              <p className="text-slate-600 text-sm">
+                {pejabat.jabatan}
+              </p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Load More Button */}
       {visibleCount < pejabatData.length && (
         <div className="text-center mt-8">
           <button
@@ -126,6 +134,7 @@ function ProfileSection() {
               <h3 className="text-3xl font-heading font-bold text-slate-900 mb-4">
                 {profile.profil.heading}
               </h3>
+
               <p className="text-slate-700 leading-relaxed text-base">
                 {profile.profil.overview.join(" ")}
               </p>
@@ -139,21 +148,34 @@ function ProfileSection() {
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="p-8 shadow-sm border border-slate-200">
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Visi</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                Visi
+              </h3>
+
               <p className="text-slate-700 text-lg mb-4">
                 {profile.visi_misi.visi}
               </p>
-              <p className="text-slate-600">{profile.visi_misi.explanation}</p>
+
+              <p className="text-slate-600">
+                {profile.visi_misi.explanation}
+              </p>
             </Card>
 
             <Card className="p-8 shadow-sm border border-slate-200">
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Misi</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                Misi
+              </h3>
+
               <ul className="space-y-3 text-slate-700">
                 {profile.visi_misi.misi.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
+                  <li
+                    key={index}
+                    className="flex items-start gap-3"
+                  >
                     <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-slate-800 font-semibold">
                       {index + 1}
                     </span>
+
                     <span>{item}</span>
                   </li>
                 ))}
@@ -173,9 +195,11 @@ function ProfileSection() {
                 <h4 className="text-2xl font-bold text-slate-900 mb-4">
                   {service.title}
                 </h4>
+
                 <p className="text-slate-700 whitespace-pre-line mb-6 leading-relaxed">
                   {service.description}
                 </p>
+
                 {service.links && service.links.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {service.links.map((link, linkIndex) => (
@@ -203,9 +227,11 @@ function ProfileSection() {
               <h3 className="text-3xl font-bold text-slate-900 mb-4">
                 {profile.struktur.heading}
               </h3>
+
               <p className="text-slate-700 mb-6">
                 {profile.struktur.description}
               </p>
+
               {profile.struktur.image && (
                 <img
                   src={profile.struktur.image}
@@ -225,7 +251,10 @@ function ProfileSection() {
                 <h4 className="text-lg font-semibold text-slate-900 mb-2">
                   {item.title}
                 </h4>
-                <p className="text-slate-600 text-sm">{item.description}</p>
+
+                <p className="text-slate-600 text-sm">
+                  {item.description}
+                </p>
               </Card>
             ))}
           </div>
@@ -240,12 +269,16 @@ function ProfileSection() {
   };
 
   return (
-    <section id="profile" className="bg-slate-50 section-padding pt-16">
+    <section
+      id="profile"
+      className="bg-slate-50 section-padding pt-16"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-heading font-bold text-slate-900 mb-4">
             {profile.title}
           </h2>
+
           <p className="text-slate-700 max-w-3xl mx-auto text-base">
             {profile.description}
           </p>
@@ -254,6 +287,7 @@ function ProfileSection() {
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           {profile.tabs.map((tab) => {
             const isActive = activeTab === tab.id;
+
             return (
               <button
                 key={tab.id}

@@ -1,11 +1,12 @@
 import { getPool } from "../config/database.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 const pool = getPool();
 
 export async function getActivePopup(req, res) {
   try {
     const [rows] = await pool.query(
-      "SELECT * FROM popup_messages WHERE active = 1 ORDER BY updated_at DESC LIMIT 1",
+      "SELECT * FROM popup_messages WHERE active = 1 ORDER BY updated_at DESC LIMIT 1"
     );
 
     return res.json(rows[0] || null);
@@ -18,8 +19,9 @@ export async function getActivePopup(req, res) {
 export async function getAllPopups(req, res) {
   try {
     const [rows] = await pool.query(
-      "SELECT * FROM popup_messages ORDER BY updated_at DESC",
+      "SELECT * FROM popup_messages ORDER BY updated_at DESC"
     );
+
     res.json(rows);
   } catch (error) {
     console.error(error);
@@ -35,46 +37,85 @@ export async function createPopup(req, res) {
       req.body.active === 1;
 
     if (active) {
-      await pool.query("UPDATE popup_messages SET active = 0 WHERE active = 1");
+      await pool.query(
+        "UPDATE popup_messages SET active = 0 WHERE active = 1"
+      );
     }
 
-    const imageUrl = req.file
-      ? `/uploads/popup/${req.file.filename}`
-      : req.body.image_url || null;
+    let imageUrl = req.body.image_url || null;
+
+    // Upload gambar ke Cloudinary
+    if (req.file?.buffer) {
+      const uploaded = await uploadToCloudinary(
+        req.file.buffer,
+        "popup",
+        "image",
+        {
+          width: 1080,
+          height: 1350,
+          crop: "limit",
+        }
+      );
+
+      if (uploaded?.secure_url) {
+        imageUrl = uploaded.secure_url;
+      }
+    }
 
     const [result] = await pool.query(
       "INSERT INTO popup_messages (image_url, active) VALUES (?, ?)",
-      [imageUrl, active ? 1 : 0],
+      [imageUrl, active ? 1 : 0]
     );
 
     const [rows] = await pool.query(
       "SELECT * FROM popup_messages WHERE id = ?",
-      [result.insertId],
+      [result.insertId]
     );
 
     res.status(201).json(rows[0]);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Gagal membuat popup" });
+    console.error("createPopup error:", error);
+    res.status(500).json({
+      message: "Gagal membuat popup",
+    });
   }
 }
 
 export async function updatePopup(req, res) {
   try {
     const { id } = req.params;
+
     const [existingRows] = await pool.query(
       "SELECT * FROM popup_messages WHERE id = ?",
-      [id],
+      [id]
     );
+
     if (!existingRows.length) {
-      return res.status(404).json({ message: "Popup tidak ditemukan" });
+      return res.status(404).json({
+        message: "Popup tidak ditemukan",
+      });
     }
 
     const existing = existingRows[0];
+
     let imageUrl = existing.image_url;
 
-    if (req.file) {
-      imageUrl = `/uploads/popup/${req.file.filename}`;
+    // Upload gambar baru ke Cloudinary
+    if (req.file?.buffer) {
+      const uploaded = await uploadToCloudinary(
+        req.file.buffer,
+        "popup",
+        "image",
+        {
+          width: 1080,
+          height: 1350,
+          crop: "limit",
+        }
+      );
+
+      if (uploaded?.secure_url) {
+        imageUrl = uploaded.secure_url;
+      }
     } else if (
       typeof req.body.image_url !== "undefined" &&
       req.body.image_url !== ""
@@ -88,40 +129,52 @@ export async function updatePopup(req, res) {
       req.body.active === 1;
 
     if (active) {
-      await pool.query("UPDATE popup_messages SET active = 0 WHERE active = 1");
+      await pool.query(
+        "UPDATE popup_messages SET active = 0 WHERE active = 1"
+      );
     }
 
     await pool.query(
       "UPDATE popup_messages SET image_url = ?, active = ? WHERE id = ?",
-      [imageUrl, active ? 1 : 0, id],
+      [imageUrl, active ? 1 : 0, id]
     );
 
     const [rows] = await pool.query(
       "SELECT * FROM popup_messages WHERE id = ?",
-      [id],
+      [id]
     );
+
     res.json(rows[0]);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Gagal memperbarui popup" });
+    console.error("updatePopup error:", error);
+    res.status(500).json({
+      message: "Gagal memperbarui popup",
+    });
   }
 }
 
 export async function deletePopup(req, res) {
   try {
     const { id } = req.params;
+
     const [result] = await pool.query(
       "DELETE FROM popup_messages WHERE id = ?",
-      [id],
+      [id]
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Popup tidak ditemukan" });
+      return res.status(404).json({
+        message: "Popup tidak ditemukan",
+      });
     }
 
-    res.json({ message: "Popup berhasil dihapus" });
+    res.json({
+      message: "Popup berhasil dihapus",
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Gagal menghapus popup" });
+    res.status(500).json({
+      message: "Gagal menghapus popup",
+    });
   }
 }

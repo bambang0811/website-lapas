@@ -7,10 +7,11 @@ function BeritaSection() {
   const { berita, loading, error } = useBerita();
   const [selectedBerita, setSelectedBerita] = useState(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(6);
 
   const API_URL =
     import.meta.env.VITE_API_URL ||
-    (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api")
+    (import.meta.env.VITE_API_BASE_URL || "https://lapas-backend.onrender.com/api")
       .replace(/\/api\/?$/, "");
 
   const formatDate = useCallback((dateString) => {
@@ -170,10 +171,31 @@ function BeritaSection() {
     [getImageUrl],
   );
 
+  const sortedBerita = useMemo(() => {
+    return [...(berita || [])].sort((a, b) => {
+      const dateA = new Date(
+        a.tanggal_publikasi || a.created_at || a.updated_at || 0,
+      ).getTime();
+      const dateB = new Date(
+        b.tanggal_publikasi || b.created_at || b.updated_at || 0,
+      ).getTime();
+
+      return dateB - dateA;
+    });
+  }, [berita]);
+
+  const visibleBerita = useMemo(() => {
+    return sortedBerita.slice(0, visibleCount);
+  }, [sortedBerita, visibleCount]);
+
   const selectedImages = useMemo(
     () => getImageUrlList(selectedBerita?.gambar_url || selectedBerita?.gambar),
     [selectedBerita, getImageUrlList],
   );
+
+  const handleLihatSemuaBerita = useCallback(() => {
+    setVisibleCount((prev) => Math.min(prev + 6, sortedBerita.length));
+  }, [sortedBerita.length]);
 
   useEffect(() => {
     if (!selectedBerita || selectedImages.length <= 1) {
@@ -233,8 +255,8 @@ function BeritaSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mb-20">
-            {berita.slice(0, 6).map((item, index) => {
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {visibleBerita.map((item, index) => {
               const itemImages = getImageUrlList(item.gambar_url || item.gambar);
               const videoUrl = getVideoUrl(item.video_url);
               const coverImage = itemImages[0] || "/images/placeholder-news.svg";
@@ -303,7 +325,20 @@ function BeritaSection() {
             })}
           </div>
 
-          {berita.length === 0 && (
+          {visibleCount < sortedBerita.length && (
+            <div className="mt-10 text-center">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={handleLihatSemuaBerita}
+                className="px-6"
+              >
+                Lihat Semua Berita
+              </Button>
+            </div>
+          )}
+
+          {sortedBerita.length === 0 && (
             <div className="text-center py-24">
               <h3 className="text-3xl font-bold text-slate-900 mb-4">
                 Belum Ada Berita
@@ -318,102 +353,117 @@ function BeritaSection() {
 
       {selectedBerita && (
         <div
-          className="fixed inset-0 z-50 bg-black/40 p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-black/40 p-3 sm:p-4 overflow-y-auto"
           onClick={(e) =>
             e.target === e.currentTarget && setSelectedBerita(null)
           }
         >
-          <div className="flex min-h-screen items-center justify-center">
-            <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl overflow-hidden">
-              <div className="flex items-center justify-between border-b p-6">
-                <h3 className="text-2xl font-bold">{selectedBerita.judul}</h3>
-                <button onClick={() => setSelectedBerita(null)}>Tutup</button>
+          <div className="flex min-h-screen items-center justify-center py-4">
+            <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold break-words pr-4">
+                  {selectedBerita.judul}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setSelectedBerita(null)}
+                  className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                >
+                  Tutup
+                </button>
               </div>
 
-              <div className="p-6 space-y-6">
-                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                  <span className="rounded-full bg-slate-100 px-3 py-1">
-                    {selectedBerita.kategori}
-                  </span>
-                  <span>•</span>
-                  <time>{formatDate(selectedBerita.tanggal_publikasi)}</time>
-                  <span>•</span>
-                  <span>{selectedBerita.penulis}</span>
-                </div>
-
-                {selectedBerita.video_url ? (
-                  <div className="space-y-3">
-                    <video
-                      src={getVideoUrl(selectedBerita.video_url)}
-                      className="w-full aspect-[9/16] object-cover rounded-lg bg-slate-200"
-                      autoPlay
-                      muted
-                      loop
-                      controls
-                      playsInline
-                    />
-                    {selectedImages.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2">
-                        {selectedImages.map((image, index) => (
-                          <img
-                            key={index}
-                            src={image}
-                            alt={`${selectedBerita.judul} foto ${index + 1}`}
-                            className="h-24 w-full object-cover rounded-md"
-                          />
-                        ))}
-                      </div>
-                    )}
+              <div className="max-h-[calc(90vh-88px)] overflow-y-auto">
+                <div className="space-y-6 p-4 sm:p-6">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                    <span className="rounded-full bg-slate-100 px-3 py-1">
+                      {selectedBerita.kategori}
+                    </span>
+                    <span>•</span>
+                    <time>{formatDate(selectedBerita.tanggal_publikasi)}</time>
+                    <span>•</span>
+                    <span>{selectedBerita.penulis}</span>
                   </div>
-                ) : selectedImages.length > 0 ? (
-                  <div className="space-y-3">
-                    <div className="relative overflow-hidden rounded-lg">
-                      <img
-                        src={selectedImages[activeSlideIndex]}
-                        alt={selectedBerita.judul}
-                        className="w-full aspect-[4/5] object-cover rounded-lg"
-                        onError={(e) => {
-                          e.currentTarget.src = "/images/placeholder-news.svg";
-                        }}
-                      />
 
-                      {selectedImages.length > 1 && (
-                        <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2">
-                          {selectedImages.map((_, index) => (
-                            <button
+                  {selectedBerita.video_url ? (
+                    <div className="space-y-3">
+                      <div className="flex max-h-[70vh] items-center justify-center overflow-hidden rounded-lg bg-slate-200">
+                        <video
+                          src={getVideoUrl(selectedBerita.video_url)}
+                          className="max-h-[70vh] w-auto max-w-full rounded-lg object-contain bg-slate-200"
+                          autoPlay
+                          muted
+                          loop
+                          controls
+                          playsInline
+                          style={{ aspectRatio: "9 / 16" }}
+                        />
+                      </div>
+                      {selectedImages.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2">
+                          {selectedImages.map((image, index) => (
+                            <img
                               key={index}
-                              type="button"
-                              onClick={() => setActiveSlideIndex(index)}
-                              className={`h-2.5 w-2.5 rounded-full transition ${
-                                index === activeSlideIndex
-                                  ? "bg-white shadow-md"
-                                  : "bg-white/60"
-                              }`}
-                              aria-label={`Pilih foto ${index + 1}`}
+                              src={image}
+                              alt={`${selectedBerita.judul} foto ${index + 1}`}
+                              className="h-24 w-full rounded-md object-cover"
                             />
                           ))}
                         </div>
                       )}
                     </div>
+                  ) : selectedImages.length > 0 ? (
+                    <div className="space-y-3">
+                      <div className="relative flex max-h-[70vh] items-center justify-center overflow-hidden rounded-lg bg-slate-200">
+                        <img
+                          src={selectedImages[activeSlideIndex]}
+                          alt={selectedBerita.judul}
+                          className="max-h-[70vh] w-auto max-w-full rounded-lg object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = "/images/placeholder-news.svg";
+                          }}
+                        />
+
+                        {selectedImages.length > 1 && (
+                          <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2">
+                            {selectedImages.map((_, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => setActiveSlideIndex(index)}
+                                className={`h-2.5 w-2.5 rounded-full transition ${
+                                  index === activeSlideIndex
+                                    ? "bg-white shadow-md"
+                                    : "bg-white/60"
+                                }`}
+                                aria-label={`Pilih foto ${index + 1}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="max-h-[30vh] overflow-y-auto pr-1">
+                    {formatKonten(selectedBerita.konten)}
                   </div>
-                ) : null}
 
-                {formatKonten(selectedBerita.konten)}
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    className="w-full"
-                    onClick={() => handleShare(selectedBerita)}
-                  >
-                    Bagikan
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="w-full"
-                    onClick={handleBeritaLainnya}
-                  >
-                    Berita Lainnya
-                  </Button>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      className="w-full"
+                      onClick={() => handleShare(selectedBerita)}
+                    >
+                      Bagikan
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      onClick={handleBeritaLainnya}
+                    >
+                      Berita Lainnya
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
