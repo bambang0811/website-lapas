@@ -278,7 +278,7 @@ function BeritaManager() {
       return;
     }
 
-    if (file.size > 30 * 1024 * 1024) {
+    if (file.size > 100 * 1024 * 1024) {
       setError("Ukuran video maksimal 30MB");
       return;
     }
