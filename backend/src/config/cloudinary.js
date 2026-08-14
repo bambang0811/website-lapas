@@ -19,6 +19,7 @@ export function uploadToCloudinary(
     const uploadOptions = {
       folder,
       resource_type: resourceType,
+      timeout: 300000,
       ...options,
     };
 
@@ -30,9 +31,6 @@ export function uploadToCloudinary(
     }
 
     if (resourceType === "video") {
-      uploadOptions.width = uploadOptions.width ?? 1080;
-      uploadOptions.height = uploadOptions.height ?? 1920;
-      uploadOptions.crop = uploadOptions.crop ?? "limit";
       uploadOptions.quality = uploadOptions.quality ?? "auto";
     }
 
@@ -40,11 +38,18 @@ export function uploadToCloudinary(
       uploadOptions,
       (error, result) => {
         if (error) {
+          console.error("Cloudinary upload error:", error);
           return reject(error);
         }
+
         resolve(result);
       },
     );
+
+    uploadStream.on("error", (error) => {
+      console.error("Cloudinary stream error:", error);
+      reject(error);
+    });
 
     uploadStream.end(buffer);
   });
