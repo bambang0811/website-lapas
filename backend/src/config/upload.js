@@ -51,14 +51,14 @@ const fileFilter = (req, file, cb) => {
 const createUpload = (subfolder) =>
   multer({
     storage: createStorage(subfolder),
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter,
   });
 
 const createMemoryUpload = () =>
   multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter,
   });
 
