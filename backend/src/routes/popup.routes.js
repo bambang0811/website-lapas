@@ -1,5 +1,6 @@
 import express from "express";
 import { uploadPopup } from "../config/upload.js";
+
 import {
   getActivePopup,
   getAllPopups,
@@ -10,10 +11,27 @@ import {
 
 const router = express.Router();
 
+// Ambil popup aktif
 router.get("/", getActivePopup);
+
+// Ambil semua popup untuk admin
 router.get("/all", getAllPopups);
-router.post("/", uploadPopup.single("image"), createPopup);
-router.put("/:id", uploadPopup.single("image"), updatePopup);
+
+// Buat popup baru
+router.post(
+  "/",
+  uploadPopup.single("image"),
+  createPopup
+);
+
+// Update popup
+router.put(
+  "/:id",
+  uploadPopup.single("image"),
+  updatePopup
+);
+
+// Hapus popup
 router.delete("/:id", deletePopup);
 
 export default router;
