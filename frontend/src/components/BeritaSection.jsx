@@ -5,14 +5,21 @@ import Button from "./common/Button";
 
 function BeritaSection() {
   const { berita, loading, error } = useBerita();
+
   const [selectedBerita, setSelectedBerita] = useState(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(6);
 
+  // Menentukan orientasi media
+  const [mediaOrientation, setMediaOrientation] = useState("landscape");
+
   const API_URL =
     import.meta.env.VITE_API_URL ||
     (import.meta.env.VITE_API_BASE_URL ||
-      "https://lapas-backend.onrender.com/api").replace(/\/api\/?$/, "");
+      "https://lapas-backend.onrender.com/api").replace(
+      /\/api\/?$/,
+      ""
+    );
 
   const formatDate = useCallback((dateString) => {
     if (!dateString) return "-";
@@ -51,16 +58,23 @@ function BeritaSection() {
 
     return (
       <div className="prose max-w-none">
-        {paragraphs.map((paragraph, index) => (
-          <p key={index} className="mb-4 text-slate-700 leading-relaxed">
-            {paragraph.split("\n").map((line, lineIndex) => (
-              <span key={lineIndex}>
-                {line}
-                {lineIndex < paragraph.split("\n").length - 1 ? <br /> : null}
-              </span>
-            ))}
-          </p>
-        ))}
+        {paragraphs.map((paragraph, index) => {
+          const lines = paragraph.split("\n");
+
+          return (
+            <p
+              key={index}
+              className="mb-4 text-slate-700 leading-relaxed"
+            >
+              {lines.map((line, lineIndex) => (
+                <span key={lineIndex}>
+                  {line}
+                  {lineIndex < lines.length - 1 && <br />}
+                </span>
+              ))}
+            </p>
+          );
+        })}
       </div>
     );
   }, []);
@@ -81,7 +95,7 @@ function BeritaSection() {
         return parsed.filter(Boolean);
       }
     } catch {
-      // Ignore invalid JSON and fallback to single value.
+      // fallback
     }
 
     if (imageValue.includes(",")) {
@@ -131,13 +145,17 @@ function BeritaSection() {
         })
         .filter(Boolean);
     },
-    [API_URL, normalizeImageList],
+    [API_URL, normalizeImageList]
   );
 
   const getImageUrl = useCallback(
-    (imageValue) =>
-      getImageUrlList(imageValue)[0] || "/images/placeholder-news.svg",
-    [getImageUrlList],
+    (imageValue) => {
+      return (
+        getImageUrlList(imageValue)[0] ||
+        "/images/placeholder-news.svg"
+      );
+    },
+    [getImageUrlList]
   );
 
   const normaliseMediaPath = useCallback(
@@ -171,49 +189,51 @@ function BeritaSection() {
 
       return `${API_URL}/uploads/berita/${normalized}`;
     },
-    [API_URL],
+    [API_URL]
   );
 
-  // PERBAIKAN VIDEO CLOUDINARY
   const getVideoUrl = useCallback(
     (videoValue) => {
       const url = normaliseMediaPath(videoValue);
 
       if (!url) return "";
 
-      // Jika video berasal dari Cloudinary,
-      // minta Cloudinary mengirimkan MP4 dengan codec H.264 + AAC.
+      // Cloudinary: pastikan video menggunakan format MP4/H264
       if (
         url.includes("res.cloudinary.com") &&
         url.includes("/video/upload/")
       ) {
         return url.replace(
           "/video/upload/",
-          "/video/upload/f_mp4,vc_h264,ac_aac/",
+          "/video/upload/f_mp4,vc_h264,ac_aac/"
         );
       }
 
       return url;
     },
-    [normaliseMediaPath],
+    [normaliseMediaPath]
   );
 
   const handleShare = useCallback(
     (item) => {
       const pageUrl = `${window.location.origin}/#berita`;
-      const imageUrl = getImageUrl(item.gambar_url || item.gambar);
+      const imageUrl = getImageUrl(
+        item.gambar_url || item.gambar
+      );
 
       const shareText = `${item.judul}\n\n${
         item.excerpt || ""
-      }\n\n${pageUrl}${imageUrl ? `\n\n${imageUrl}` : ""}`;
+      }\n\n${pageUrl}${
+        imageUrl ? `\n\n${imageUrl}` : ""
+      }`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-        shareText,
+        shareText
       )}`;
 
       window.open(whatsappUrl, "_blank");
     },
-    [getImageUrl],
+    [getImageUrl]
   );
 
   const sortedBerita = useMemo(() => {
@@ -222,14 +242,14 @@ function BeritaSection() {
         a.tanggal_publikasi ||
           a.created_at ||
           a.updated_at ||
-          0,
+          0
       ).getTime();
 
       const dateB = new Date(
         b.tanggal_publikasi ||
           b.created_at ||
           b.updated_at ||
-          0,
+          0
       ).getTime();
 
       return dateB - dateA;
@@ -240,20 +260,50 @@ function BeritaSection() {
     return sortedBerita.slice(0, visibleCount);
   }, [sortedBerita, visibleCount]);
 
-  const selectedImages = useMemo(
-    () =>
-      getImageUrlList(
-        selectedBerita?.gambar_url ||
-          selectedBerita?.gambar,
-      ),
-    [selectedBerita, getImageUrlList],
-  );
+  const selectedImages = useMemo(() => {
+    return getImageUrlList(
+      selectedBerita?.gambar_url ||
+        selectedBerita?.gambar
+    );
+  }, [selectedBerita, getImageUrlList]);
 
   const handleLihatSemuaBerita = useCallback(() => {
     setVisibleCount((prev) =>
-      Math.min(prev + 6, sortedBerita.length),
+      Math.min(prev + 6, sortedBerita.length)
     );
   }, [sortedBerita.length]);
+
+  const handleSelectBerita = useCallback((item) => {
+    setSelectedBerita(item);
+    setActiveSlideIndex(0);
+    setMediaOrientation("landscape");
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedBerita(null);
+    setActiveSlideIndex(0);
+    setMediaOrientation("landscape");
+  }, []);
+
+  const handleMediaLoad = useCallback((event) => {
+    const element = event.currentTarget;
+
+    const width =
+      element.videoWidth || element.naturalWidth;
+
+    const height =
+      element.videoHeight || element.naturalHeight;
+
+    if (!width || !height) return;
+
+    if (width > height) {
+      setMediaOrientation("landscape");
+    } else if (height > width) {
+      setMediaOrientation("portrait");
+    } else {
+      setMediaOrientation("square");
+    }
+  }, []);
 
   useEffect(() => {
     if (!selectedBerita || selectedImages.length <= 1) {
@@ -263,7 +313,7 @@ function BeritaSection() {
 
     const timer = setInterval(() => {
       setActiveSlideIndex(
-        (prev) => (prev + 1) % selectedImages.length,
+        (prev) => (prev + 1) % selectedImages.length
       );
     }, 3000);
 
@@ -271,9 +321,10 @@ function BeritaSection() {
   }, [selectedBerita, selectedImages]);
 
   const handleBeritaLainnya = useCallback(() => {
-    setSelectedBerita(null);
+    handleCloseModal();
+
     window.location.hash = "#berita";
-  }, []);
+  }, [handleCloseModal]);
 
   if (loading) {
     return (
@@ -282,7 +333,7 @@ function BeritaSection() {
         className="section-padding bg-white"
       >
         <div className="max-w-7xl mx-auto text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
 
           <p className="mt-4 text-gray-700">
             Memuat berita...
@@ -316,18 +367,21 @@ function BeritaSection() {
 
   return (
     <>
+      {/* =========================
+          SECTION BERITA
+      ========================== */}
       <section
         id="berita"
         className="section-padding bg-white"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-heading font-bold text-slate-900 mb-4">
               Berita Terkini
             </h2>
 
             <div className="flex justify-center mb-3">
-              <div className="h-1 w-16 bg-blue-600 rounded-full"></div>
+              <div className="h-1 w-16 bg-blue-600 rounded-full" />
             </div>
 
             <p className="text-lg text-slate-700 max-w-2xl mx-auto">
@@ -335,13 +389,16 @@ function BeritaSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* GRID BERITA */}
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {visibleBerita.map((item, index) => {
               const itemImages = getImageUrlList(
-                item.gambar_url || item.gambar,
+                item.gambar_url || item.gambar
               );
 
-              const videoUrl = getVideoUrl(item.video_url);
+              const videoUrl = getVideoUrl(
+                item.video_url
+              );
 
               const coverImage =
                 itemImages[0] ||
@@ -352,15 +409,10 @@ function BeritaSection() {
                   key={item.id}
                   hover
                   shadow="md"
-                  className="h-full"
+                  className="h-full overflow-hidden"
                 >
-                  <div
-                    className={`w-full overflow-hidden bg-slate-200 ${
-                      videoUrl
-                        ? "aspect-[9/16]"
-                        : "aspect-[4/5]"
-                    }`}
-                  >
+                  {/* MEDIA CARD */}
+                  <div className="h-[300px] sm:h-[320px] w-full overflow-hidden bg-slate-200">
                     {videoUrl ? (
                       <video
                         src={videoUrl}
@@ -369,6 +421,7 @@ function BeritaSection() {
                         playsInline
                         autoPlay
                         loop
+                        preload="metadata"
                       />
                     ) : itemImages.length > 0 ? (
                       <img
@@ -390,8 +443,9 @@ function BeritaSection() {
                     )}
                   </div>
 
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
+                  {/* CARD CONTENT */}
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 text-sm text-slate-600 mb-3">
                       <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                         {item.kategori}
                       </span>
@@ -400,17 +454,17 @@ function BeritaSection() {
 
                       <time>
                         {formatDate(
-                          item.tanggal_publikasi,
+                          item.tanggal_publikasi
                         )}
                       </time>
                     </div>
 
-                    <h3 className="text-xl font-semibold text-slate-900 mb-3">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2 line-clamp-2 min-h-[56px]">
                       {item.judul}
                     </h3>
 
-                    <p className="text-slate-600 text-sm mb-6">
-                      {truncateText(item.excerpt, 120)}
+                    <p className="text-slate-600 text-sm mb-4 line-clamp-2 min-h-[40px]">
+                      {truncateText(item.excerpt, 110)}
                     </p>
 
                     <Button
@@ -418,7 +472,7 @@ function BeritaSection() {
                       variant="primary"
                       className="w-full"
                       onClick={() =>
-                        setSelectedBerita(item)
+                        handleSelectBerita(item)
                       }
                     >
                       Baca Selengkapnya
@@ -429,8 +483,9 @@ function BeritaSection() {
             })}
           </div>
 
+          {/* BUTTON BERITA LAINNYA */}
           {visibleCount < sortedBerita.length && (
-            <div className="mt-10 text-center">
+            <div className="mt-8 text-center">
               <Button
                 size="lg"
                 variant="outline"
@@ -442,6 +497,7 @@ function BeritaSection() {
             </div>
           )}
 
+          {/* EMPTY */}
           {sortedBerita.length === 0 && (
             <div className="text-center py-24">
               <h3 className="text-3xl font-bold text-slate-900 mb-4">
@@ -456,16 +512,22 @@ function BeritaSection() {
         </div>
       </section>
 
+      {/* =========================
+          MODAL DETAIL BERITA
+      ========================== */}
       {selectedBerita && (
         <div
           className="fixed inset-0 z-50 bg-black/40 p-3 sm:p-4 overflow-y-auto"
-          onClick={(e) =>
-            e.target === e.currentTarget &&
-            setSelectedBerita(null)
-          }
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleCloseModal();
+            }
+          }}
         >
           <div className="flex min-h-screen items-center justify-center py-4">
             <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-xl">
+
+              {/* HEADER */}
               <div className="flex items-center justify-between border-b p-4 sm:p-6">
                 <h3 className="text-xl sm:text-2xl font-bold break-words pr-4">
                   {selectedBerita.judul}
@@ -473,15 +535,18 @@ function BeritaSection() {
 
                 <button
                   type="button"
-                  onClick={() => setSelectedBerita(null)}
+                  onClick={handleCloseModal}
                   className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                 >
                   Tutup
                 </button>
               </div>
 
+              {/* MODAL CONTENT */}
               <div className="max-h-[calc(90vh-88px)] overflow-y-auto">
                 <div className="space-y-6 p-4 sm:p-6">
+
+                  {/* META */}
                   <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                     <span className="rounded-full bg-slate-100 px-3 py-1">
                       {selectedBerita.kategori}
@@ -491,7 +556,7 @@ function BeritaSection() {
 
                     <time>
                       {formatDate(
-                        selectedBerita.tanggal_publikasi,
+                        selectedBerita.tanggal_publikasi
                       )}
                     </time>
 
@@ -502,25 +567,41 @@ function BeritaSection() {
                     </span>
                   </div>
 
+                  {/* =========================
+                      VIDEO
+                  ========================== */}
                   {selectedBerita.video_url ? (
                     <div className="space-y-3">
-                      <div className="flex max-h-[70vh] items-center justify-center overflow-hidden rounded-lg bg-slate-200">
+                      <div
+                        className={`relative flex w-full items-center justify-center overflow-hidden rounded-lg bg-black ${
+                          mediaOrientation === "portrait"
+                            ? "min-h-[300px]"
+                            : ""
+                        }`}
+                      >
                         <video
                           src={getVideoUrl(
-                            selectedBerita.video_url,
+                            selectedBerita.video_url
                           )}
-                          className="max-h-[70vh] w-auto max-w-full rounded-lg object-contain bg-slate-200"
+                          className={
+                            mediaOrientation ===
+                            "portrait"
+                              ? "max-h-[70vh] w-auto max-w-full rounded-lg object-contain"
+                              : "block max-h-[70vh] w-full rounded-lg object-contain"
+                          }
                           autoPlay
                           muted
                           loop
                           controls
                           playsInline
-                          style={{
-                            aspectRatio: "9 / 16",
-                          }}
+                          preload="metadata"
+                          onLoadedMetadata={
+                            handleMediaLoad
+                          }
                         />
                       </div>
 
+                      {/* FOTO TAMBAHAN */}
                       {selectedImages.length > 0 && (
                         <div className="grid grid-cols-3 gap-2">
                           {selectedImages.map(
@@ -532,15 +613,29 @@ function BeritaSection() {
                                   index + 1
                                 }`}
                                 className="h-24 w-full rounded-md object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src =
+                                    "/images/placeholder-news.svg";
+                                }}
                               />
-                            ),
+                            )
                           )}
                         </div>
                       )}
                     </div>
                   ) : selectedImages.length > 0 ? (
+                    /* =========================
+                       FOTO
+                    ========================== */
                     <div className="space-y-3">
-                      <div className="relative flex max-h-[70vh] items-center justify-center overflow-hidden rounded-lg bg-slate-200">
+                      <div
+                        className={`relative flex w-full items-center justify-center overflow-hidden rounded-lg bg-slate-200 ${
+                          mediaOrientation ===
+                          "portrait"
+                            ? "min-h-[300px]"
+                            : ""
+                        }`}
+                      >
                         <img
                           src={
                             selectedImages[
@@ -548,13 +643,20 @@ function BeritaSection() {
                             ]
                           }
                           alt={selectedBerita.judul}
-                          className="max-h-[70vh] w-auto max-w-full rounded-lg object-contain"
+                          className={
+                            mediaOrientation ===
+                            "portrait"
+                              ? "max-h-[70vh] w-auto max-w-full rounded-lg object-contain"
+                              : "block max-h-[70vh] w-full rounded-lg object-contain"
+                          }
+                          onLoad={handleMediaLoad}
                           onError={(e) => {
                             e.currentTarget.src =
                               "/images/placeholder-news.svg";
                           }}
                         />
 
+                        {/* DOT SLIDER */}
                         {selectedImages.length > 1 && (
                           <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2">
                             {selectedImages.map(
@@ -564,7 +666,7 @@ function BeritaSection() {
                                   type="button"
                                   onClick={() =>
                                     setActiveSlideIndex(
-                                      index,
+                                      index
                                     )
                                   }
                                   className={`h-2.5 w-2.5 rounded-full transition ${
@@ -577,7 +679,7 @@ function BeritaSection() {
                                     index + 1
                                   }`}
                                 />
-                              ),
+                              )
                             )}
                           </div>
                         )}
@@ -585,12 +687,18 @@ function BeritaSection() {
                     </div>
                   ) : null}
 
+                  {/* =========================
+                      KONTEN / CAPTION
+                  ========================== */}
                   <div className="max-h-[30vh] overflow-y-auto pr-1">
                     {formatKonten(
-                      selectedBerita.konten,
+                      selectedBerita.konten
                     )}
                   </div>
 
+                  {/* =========================
+                      BUTTON
+                  ========================== */}
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                       className="w-full"
