@@ -13,43 +13,87 @@ export function uploadToCloudinary(
   buffer,
   folder = "lapas_berita",
   resourceType = "image",
-  options = {},
+  options = {}
 ) {
   return new Promise((resolve, reject) => {
     const uploadOptions = {
       folder,
       resource_type: resourceType,
-      timeout: 300000,
       ...options,
     };
 
     if (resourceType === "image") {
-      uploadOptions.width = uploadOptions.width ?? 1080;
-      uploadOptions.height = uploadOptions.height ?? 1350;
-      uploadOptions.crop = uploadOptions.crop ?? "fill";
-      uploadOptions.gravity = uploadOptions.gravity ?? "auto";
+      uploadOptions.width =
+        uploadOptions.width ?? 1080;
+
+      uploadOptions.height =
+        uploadOptions.height ?? 1350;
+
+      uploadOptions.crop =
+        uploadOptions.crop ?? "limit";
+
+      // gravity hanya dipakai jika crop mendukung gravity
+      const gravitySupportedCrops = [
+        "fill",
+        "thumb",
+        "crop",
+        "fill_pad",
+        "auto",
+        "auto_pad",
+      ];
+
+      if (
+        uploadOptions.gravity &&
+        !gravitySupportedCrops.includes(
+          uploadOptions.crop
+        )
+      ) {
+        delete uploadOptions.gravity;
+      }
     }
 
     if (resourceType === "video") {
-      uploadOptions.quality = uploadOptions.quality ?? "auto";
+      uploadOptions.width =
+        uploadOptions.width ?? 1080;
+
+      uploadOptions.height =
+        uploadOptions.height ?? 1920;
+
+      uploadOptions.crop =
+        uploadOptions.crop ?? "limit";
+
+      // Jangan gunakan gravity dengan crop "limit"
+      if (
+        uploadOptions.crop === "limit"
+      ) {
+        delete uploadOptions.gravity;
+      }
+
+      uploadOptions.quality =
+        uploadOptions.quality ?? "auto";
     }
 
-    const uploadStream = cloudinary.uploader.upload_stream(
-      uploadOptions,
-      (error, result) => {
-        if (error) {
-          console.error("Cloudinary upload error:", error);
-          return reject(error);
-        }
-
-        resolve(result);
-      },
+    console.log(
+      "Cloudinary upload options:",
+      uploadOptions
     );
 
-    uploadStream.on("error", (error) => {
-      console.error("Cloudinary stream error:", error);
-      reject(error);
-    });
+    const uploadStream =
+      cloudinary.uploader.upload_stream(
+        uploadOptions,
+        (error, result) => {
+          if (error) {
+            console.error(
+              "Cloudinary upload error:",
+              error
+            );
+
+            return reject(error);
+          }
+
+          resolve(result);
+        }
+      );
 
     uploadStream.end(buffer);
   });
